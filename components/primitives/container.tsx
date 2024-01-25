@@ -7,9 +7,7 @@ import { useAppStore, useAppSelector } from "@/lib/hooks";
 import { setDraggedId } from "@/lib/rootreducer";
 import ImagePlaceholder from "../editor/primitives/image-placeholder";
 
-const BlockRegistry: { [component: string]: () => ReactElement } = {
-  'ImagePlaceholder': ImagePlaceholder
-}
+
 const Container = forwardRef(
   function Container(
     {

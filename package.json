@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo -p 3001",
+    "dev": "next dev --turbo -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,7 +13,7 @@
     "@types/react-redux": "^7.1.33",
     "bcrypt": "^5.1.1",
     "mongodb": "^6.3.0",
-    "next": "14.0.4",
+    "next": "^14.1.0",
     "primeicons": "^6.0.1",
     "primereact": "^10.3.1",
     "react": "^18",

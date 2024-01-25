@@ -3,7 +3,7 @@ import type { ReactNode, ReactElement } from "react";
 import { usePathname } from 'next/navigation'
 import Link from 'next/link';
 import { Panel } from 'primereact/panel';
-import { BreadCrumb } from 'primereact/breadcrumb';
+import { BreadCrumb } from "primereact/breadcrumb";
 
 const Layout = ({ children }: { children: ReactNode }) => {
 

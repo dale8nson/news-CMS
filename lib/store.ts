@@ -2,13 +2,15 @@ import { configureStore, createSlice, combineReducers } from '@reduxjs/toolkit'
 import createStore from "redux";
 import rootReducer from './rootreducer';
 import editorLayoutSlice from './editor-layout-slice';
+import BlockRegistry from './block-registry';
 
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       editorLayoutSlice,
-      rootReducer
+      rootReducer,
+      BlockRegistry
     }
   })
 }

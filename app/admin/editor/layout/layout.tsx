@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, createContext } from 'react';
 import { usePathname } from 'next/navigation'
 import Link from 'next/link';
 import type { ReactElement } from 'react';
@@ -14,8 +14,10 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { setSelectedComponentTemplate, setPageTemplate } from '@/lib/editor-layout-slice';
 import type { ItemProps } from '@/lib/editor-layout-slice';
 import ImagePlaceholder from '@/components/editor/primitives/image-placeholder';
+import type { PageTemplate } from "@/lib/editor-layout-slice";
 
 import { Dropdown } from 'primereact/dropdown';
+
 
 
 export default function Layout({
@@ -46,6 +48,7 @@ export default function Layout({
   console.log(`crumbs:`, crumbs);
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(false);
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
   const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
   const dispatch = useAppDispatch();
@@ -82,21 +85,21 @@ export default function Layout({
   const units = ['%', 'px', 'vw', 'vh'];
 
   return (
-    <section className='mx-0 w-full h-full'>
+    <section className='mx-0 w-full h-full' ref={() => setPageLoaded(true)}>
       <Panel pt={{ content: { className: 'flex-col w-full p-0 relative' } }}>
         {/* <BreadCrumb model={crumbs} className='bg-[--highlight-bg]' pt={{root:{className:'w-full mx-0'}}} /> */}
         <Menubar start={start} model={items} end={end} className='w-full' pt={{ menuitem: { className: 'mx-6' } }} />
       </Panel>
       <Sidebar modal={false} dismissable={false} closeIcon='pi pi-arrow-left' pt={{ root: { className: 'w-[12rem] relative' } }} header='Block Gallery' visible={leftSidebarVisible} onHide={() => setLeftSidebarVisible(false)} >
         <Panel className='relative'>
-          <ImagePlaceholder />
+          {pageLoaded && <ImagePlaceholder />}
         </Panel>
       </Sidebar>
       <div className={tw}>
         {children}
         <Sidebar header={selectedComponentTemplate?.displayName} position='right' visible={rightSidebarVisible} onHide={() => setRightSidebarVisible(false)} closeIcon='pi pi-arrow-right' modal={false} dismissable={false} >
           <Panel >
-            {selectedComponentTemplate && Object.entries(selectedComponentTemplate?.props as ItemProps).map(([key, value]) => {
+            {selectedComponentTemplate?.props?.style && Object.entries(selectedComponentTemplate?.props?.style as ItemProps).map(([key, value]) => {
               const keywords = key.match(/([a-z]+?(?=[A-Z]))|([A-Z].+)|^[a-z]+$/g);
               console.log(`keywords:`, keywords);
               if (keywords?.length) {
@@ -116,7 +119,7 @@ export default function Layout({
                 let unit: string | null = null;
                 let isLengthPercentage = false;
                 if (key.match(/([wW]idth|[hH]eight|margin|padding)/)) {
-                  const lengthPercentage = value.match(/(\d{1,3})|(%|px|vw|vh)/g);
+                  const lengthPercentage = value.match(/(\d{1,4})|(%|px|vw|vh)/g);
                   length = lengthPercentage?.[0] as string;
                   unit = lengthPercentage?.[1] as string;
                   isLengthPercentage = true;
@@ -126,18 +129,28 @@ export default function Layout({
 
                   // <div  className='flex-col w-full m-4'>
 
-                  <div key={key} className='grid grid-flow-dense items-center' style={{gridTemplateColumns:'minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr)'}}>
+                  <div key={key} className='grid grid-flow-dense items-center' style={{ gridTemplateColumns: `minmax(0, 2fr) minmax(0, 1fr) ${isLengthPercentage ? 'minmax(0, 2fr)' : ''}` }}>
                     <label htmlFor={key} className='m-2'>{displayName}</label>
-                    <InputText id={key} value={isLengthPercentage ? length as string : value} className='text-white border-solid text-center border-white border-b-2 p-2' onChange={(e) => { 
-                      const props = pageTemplate?.props;
-                      dispatch(setSelectedComponentTemplate({...pageTemplate, props: {...props, [key]: `${e.target.value}${unit}`}}))}} />
+                    <InputText id={key} value={isLengthPercentage ? length as string : value} onChange={e => {
+                      const props = selectedComponentTemplate?.props;
+                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: isLengthPercentage ? `${e.target.value}${unit}` : e.target.value } } }
+                      dispatch(setSelectedComponentTemplate(newTemplate));
 
-                    {isLengthPercentage && <Dropdown options={units} value={unit} onChange={(e) => { 
+                      if (selectedComponentTemplate.id === pageTemplate?.id) {
+                        dispatch(setPageTemplate(newTemplate))
+                      }
+
+                    }} />
+
+                    {isLengthPercentage && <Dropdown options={units} value={unit} onChange={(e) => {
                       const props = pageTemplate?.props;
-                      dispatch(setSelectedComponentTemplate({...pageTemplate, props: {...props, [key]: `${length}${e.value}`}}));
-                      // dispatch(setSelectedComponentTemplate(pageTemplate));
+                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style, [key]: `${length}${e.value}` } } };
+                      dispatch(setSelectedComponentTemplate(newTemplate));
+                      if (selectedComponentTemplate.id === pageTemplate?.id) {
+                        dispatch(setPageTemplate(newTemplate))
+                      }
                     }}
-                     />}
+                    />}
                   </div>
                   // </div>
                 )
