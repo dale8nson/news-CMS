@@ -2,9 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction, CaseReducer } from "@reduxjs/toolkit";
 import { staticGenerationAsyncStorage } from "next/dist/client/components/static-generation-async-storage.external";
 
-export type Prop = string | number | null | ItemProps;
+export type Prop = string | number | null;
 
-export type ItemProps = { [prop: string]: Prop | { [prop: string]: Prop } | string | number | null }
+export interface ItemProps { [prop: string]: Prop | null | ItemProps }
 
 export interface ComponentTemplate {
   id: string,
@@ -33,8 +33,8 @@ export interface PageTemplate extends ComponentTemplate {
 type State = {
   selectedComponentTemplate: ComponentTemplate | null,
   pageTemplate: PageTemplate | null,
-  componentTemplates: ComponentTemplate[] | null,
-  components: Component[] | null
+  componentTemplates:{[id: string]: ComponentTemplate } | null,
+  components: {[id: string]: Component } | null
 }
 
 const initialState: State = {
@@ -55,8 +55,8 @@ const initialState: State = {
       }
     }
   },
-  componentTemplates: [],
-  components: []
+  componentTemplates: {},
+  components: {}
 }
 
 const editorLayoutSlice = createSlice({
@@ -65,11 +65,13 @@ const editorLayoutSlice = createSlice({
   reducers: {
     setSelectedComponentTemplate: (state, action) => ({ ...state, selectedComponentTemplate: action.payload }),
     setPageTemplate: (state, action) => ({ ...state, pageTemplate: action.payload }),
-    registerComponentTemplate: (state, action) => ({ ...state, componentTemplates: [...state.componentTemplates as ComponentTemplate[], { id: crypto.randomUUID(), ...action.payload }] }),
-    registerComponent: (state, action) => ({...state, components: [...state.components as Component[], action.payload ]})
+    registerComponentTemplate: (state, action) => ({ ...state, componentTemplates: {...state.componentTemplates,  [action.payload.id]: action.payload } }),
+    updateComponentTemplate: (state, action) => ({ ...state, componentTemplates: {...state.componentTemplates,  [action.payload.id]: action.payload } }),
+    registerComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }}),
+    updateComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }})
     }
 })
 
 export default editorLayoutSlice.reducer;
 
-export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, registerComponent } = editorLayoutSlice.actions;
+export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent } = editorLayoutSlice.actions;

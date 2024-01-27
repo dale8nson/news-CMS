@@ -1,10 +1,9 @@
 
 import { createSlice } from "@reduxjs/toolkit";
-import { staticGenerationAsyncStorage } from "next/dist/client/components/static-generation-async-storage.external";
 export { ContainerPlaceholder, ImagePlaceholder, Container, ArticleGroup1} from '@/components';
 
 type Block = { id: string, source: string }
-interface BlockRegistry { [componentName: string]: Block }
+interface BlockRegistry { [id: string]: Block }
 
 const initialState: BlockRegistry = {};
 
@@ -15,7 +14,7 @@ const BlockRegistry = createSlice({
     registerBlock (state, action) {
 
       return {
-        ...state, [action.payload.componentName]: { id: crypto.randomUUID(), source: action.payload.source }
+        ...state, [action.payload.id]: { props: action.payload.props }
       }
     }
   }

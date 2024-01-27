@@ -10,8 +10,8 @@ import { Sidebar } from 'primereact/sidebar';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber'
 import { Panel } from 'primereact/panel';
-import { BreadCrumb } from 'primereact/breadcrumb';
-import { setSelectedComponentTemplate, setPageTemplate } from '@/lib/editor-layout-slice';
+import { InputSwitch } from 'primereact/inputswitch';
+import { setSelectedComponentTemplate, setPageTemplate, updateComponentTemplate } from '@/lib/editor-layout-slice';
 import type { ItemProps } from '@/lib/editor-layout-slice';
 import ImagePlaceholder from '@/components/editor/primitives/image-placeholder';
 import type { PageTemplate } from "@/lib/editor-layout-slice";
@@ -49,6 +49,7 @@ export default function Layout({
   const [leftSidebarVisible, setLeftSidebarVisible] = useState(false);
   const [rightSidebarVisible, setRightSidebarVisible] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
+  const [modeChecked, setModeChecked] = useState(false);
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
   const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
   const dispatch = useAppDispatch();
@@ -61,7 +62,14 @@ export default function Layout({
 
   const end = (
     <>
-      <Button className='p-button' icon='pi pi-sliders-h text-3xl' onClick={() => setRightSidebarVisible(true)} />
+      <div className='space-x-4 flex'>
+        <div className='flex align-baseline space-x-4' >
+          <h1>Dummy</h1>
+          <InputSwitch className='m-auto' disabled checked={modeChecked} />
+          <h1>Content</h1>
+        </div>
+        <Button className='p-button' icon='pi pi-sliders-h text-3xl' onClick={() => setRightSidebarVisible(true)} />
+      </div>
     </>
   )
 
@@ -87,7 +95,6 @@ export default function Layout({
   return (
     <section className='mx-0 w-full h-full' ref={() => setPageLoaded(true)}>
       <Panel pt={{ content: { className: 'flex-col w-full p-0 relative' } }}>
-        {/* <BreadCrumb model={crumbs} className='bg-[--highlight-bg]' pt={{root:{className:'w-full mx-0'}}} /> */}
         <Menubar start={start} model={items} end={end} className='w-full' pt={{ menuitem: { className: 'mx-6' } }} />
       </Panel>
       <Sidebar modal={false} dismissable={false} closeIcon='pi pi-arrow-left' pt={{ root: { className: 'w-[12rem] relative' } }} header='Block Gallery' visible={leftSidebarVisible} onHide={() => setLeftSidebarVisible(false)} >
@@ -120,8 +127,15 @@ export default function Layout({
                 let isLengthPercentage = false;
                 if (key.match(/([wW]idth|[hH]eight|margin|padding)/)) {
                   const lengthPercentage = value.match(/(\d{1,4})|(%|px|vw|vh)/g);
-                  length = lengthPercentage?.[0] as string;
-                  unit = lengthPercentage?.[1] as string;
+                  if (lengthPercentage?.length) {
+                    if (lengthPercentage.length > 1) {
+                      length = lengthPercentage?.[0] as string;
+                      unit = lengthPercentage?.[1] as string;
+                    }
+                  } else {
+                    length = '0';
+                    unit = '%';
+                  }
                   isLengthPercentage = true;
                 }
 
@@ -138,16 +152,20 @@ export default function Layout({
 
                       if (selectedComponentTemplate.id === pageTemplate?.id) {
                         dispatch(setPageTemplate(newTemplate))
+                      } else {
+                        dispatch(updateComponentTemplate(newTemplate))
                       }
 
                     }} />
 
                     {isLengthPercentage && <Dropdown options={units} value={unit} onChange={(e) => {
-                      const props = pageTemplate?.props;
-                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style, [key]: `${length}${e.value}` } } };
+                      const props = selectedComponentTemplate?.props;
+                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: `${length}${e.value}` } } };
                       dispatch(setSelectedComponentTemplate(newTemplate));
                       if (selectedComponentTemplate.id === pageTemplate?.id) {
                         dispatch(setPageTemplate(newTemplate))
+                      } else {
+                        dispatch(updateComponentTemplate(newTemplate));
                       }
                     }}
                     />}

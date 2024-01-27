@@ -27,6 +27,10 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   // if(!!selectedItemProps) {
   
   // console.log(`component:`, componentName);
+
+  const dragStartHandler: DragEventHandler = (e) => {
+    e.preventDefault();
+  }
   
   const dragOverHandler: DragEventHandler = (e) => {
     e.preventDefault();
@@ -57,16 +61,12 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   }
 
   console.log(`blocks:`, blocks);
-// useEffect(() => {
-//   console.log(`BlockRegistry:`, Registry);
-  // dispatch(registerBlock({componentName:'ContainerPlaceholder', source: ContainerPlaceholder.toString()}))
-// }, [dispatch, Registry]);
   
 
   return (
     <>
       {parentNode && createPortal(blocks, parentNode as Element)}
-      <div draggable={false} className={`bg-gray-400 w-full z-30 ${className}`} style={{ display:'flex', minHeight:'4vw', position: 'relative'}} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} ref={ref}>
+      <div draggable={false} className={`bg-gray-400 w-full z-30 ${className}`} style={{minHeight:'4vw', position: 'relative'}} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
         <div className='' draggable={false} style={{ width: '100%', height:'max-content', display: 'flex', flexDirection: 'column' }} >
           <i className='pi pi-plus p-2 justify-center align-center text-4xl text-black' draggable={false} />
         </div>

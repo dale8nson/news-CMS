@@ -5,7 +5,7 @@ import type { DragEventHandler } from "react";
 import ContainerPlaceholder from "../editor/primitives/container-placeholder";
 import { useAppStore, useAppSelector } from "@/lib/hooks";
 import { setDraggedId } from "@/lib/rootreducer";
-import ImagePlaceholder from "../editor/primitives/image-placeholder";
+import { ItemProps } from "@/lib/editor-layout-slice";
 
 
 const Container = forwardRef(
@@ -13,11 +13,6 @@ const Container = forwardRef(
     {
       containerId,
       children,
-      row = false,
-      column = false,
-      columnSpan = null,
-      grid = false,
-      gridTemplateColumns = 'grid-cols-1',
       className = '',
       mode = 'presentation',
       draggable,
@@ -30,33 +25,28 @@ const Container = forwardRef(
       onDragExit,
       onClick,
       style
-     }: {
-        containerId?: string,
-        children?: ReactNode,
-        row?: boolean,
-        column?: boolean,
-        columnSpan?: number | null,
-        grid?: boolean,
-        gridTemplateColumns?: string,
-        className?: string,
-        mode?: 'editor' | 'presentation',
-        draggable?: boolean,
-        tabIndex?: number
-        onDragStart?: DragEventHandler,
-        onDrop?: DragEventHandler,
-        onDragOver?: DragEventHandler,
-        onDragLeave?: DragEventHandler,
-        onDragEnter?: DragEventHandler,
-        onDragExit?: DragEventHandler,
-        onClick?: MouseEventHandler,
-        style?: object
-      },
+    }: {
+      containerId?: string,
+      children?: ReactNode,
+      className?: string,
+      mode?: 'editor' | 'presentation',
+      draggable?: boolean,
+      tabIndex?: number
+      onDragStart?: DragEventHandler,
+      onDrop?: DragEventHandler,
+      onDragOver?: DragEventHandler,
+      onDragLeave?: DragEventHandler,
+      onDragEnter?: DragEventHandler,
+      onDragExit?: DragEventHandler,
+      onClick?: MouseEventHandler,
+      style?: ItemProps
+    },
     ref?: any) {
-      console.log(`Container`);
-      const store = useAppStore();
-      const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
-      const containerRef = useRef<any>(null);
-      const [parentNode, setParentNode] = useState<Element | null>(null);
+    console.log(`Container`);
+    const store = useAppStore();
+    const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
+    const containerRef = useRef<any>(null);
+    const [parentNode, setParentNode] = useState<Element | null>(null);
 
     const dragStartHandler: DragEventHandler = (e) => {
       console.log(`dragStartHandler`);
@@ -69,44 +59,51 @@ const Container = forwardRef(
 
     const dragOverHandler: DragEventHandler = (e) => {
       e.preventDefault();
-  
+
     }
 
     // const dropHandler: DragEventHandler = (e) => {
     //   e.preventDefault();
-  
+
     //   const block = createElement(BlockRegistry[component], {...props,key: crypto.randomUUID()}, null);
     //   setBlocks([...blocks as ReactElement[], block]);
     // }
 
     const initRef = (node: any) => {
-      
-      if(!!ref) ref.current = node;
-      // if(!!containerRef) containerRef.current = node;
+      if(!node) return;
+
+      if (!!ref) {
+        if (typeof ref === 'function') {
+          ref(node)
+        } else {
+          ref.current = node;
+        }
+        // if(!!containerRef) containerRef.current = node;
+      }
     }
 
     useEffect(() => {
-      if(!containerRef) return;
+      if (!containerRef) return;
       setParentNode(containerRef.current);
-    },[])
+    }, [])
 
     return (
       <div
         id={containerId}
-        className={`${!!row ? 'flex' : ''} ${!!column ? `flex-col` : ''} ${!!columnSpan ? `w-${columnSpan === 12 ? `full` : `${columnSpan}/12`}` : ''} ${!!grid ? `grid ${gridTemplateColumns}` : ''} ${className} min-h-[4vw]`}
+        className={className}
         ref={initRef}
-        draggable={draggable || mode === 'editor'}
+        draggable={draggable}
         tabIndex={tabIndex}
         onDragStart={onDragStart || dragStartHandler}
         onDrop={onDrop}
-        onDragOver={onDragOver}
+        onDragOver={onDragOver || dragOverHandler}
         onDragLeave={onDragLeave}
         onDragEnter={onDragEnter}
         onDragExit={onDragExit}
         onClick={onClick}
         style={style}
       >
-        {mode === 'editor' && <div draggable={false} ref={containerRef} className="flex-col justify-evenly" /> }
+        {mode === 'editor' && <div draggable={false} ref={containerRef} className="flex-col justify-evenly" />}
         {mode !== 'editor' && children}
         {mode === 'editor' && <div className="w-full h-full relative" draggable={false}><ContainerPlaceholder parentNode={parentNode} className='z-20' /></div>}
       </div>
