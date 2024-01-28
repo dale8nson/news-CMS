@@ -10,6 +10,8 @@ export interface ComponentTemplate {
   id: string,
   componentName: string,
   displayName: string,
+  canEdit: boolean,
+  dragAction: 'copy' | 'move' | undefined,
   props?: ItemProps,
   children?: ComponentTemplate[]
 }
@@ -43,6 +45,7 @@ const initialState: State = {
     id: crypto.randomUUID(),
     componentName: 'div',
     displayName: 'Default Page Template',
+    canEdit: true,
     props: {
       style: {
         paddingTop: '10%',

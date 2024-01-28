@@ -11,6 +11,7 @@ import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber'
 import { Panel } from 'primereact/panel';
 import { InputSwitch } from 'primereact/inputswitch';
+import { Divider } from 'primereact/divider';
 import { setSelectedComponentTemplate, setPageTemplate, updateComponentTemplate } from '@/lib/editor-layout-slice';
 import type { ItemProps } from '@/lib/editor-layout-slice';
 import ImagePlaceholder from '@/components/editor/primitives/image-placeholder';
@@ -86,7 +87,7 @@ export default function Layout({
     }
   ]
 
-  const tw = `flex m-0 duration-300 transition-all my-auto ${leftSidebarVisible && rightSidebarVisible ? 'scale-x-[.6] -translate-x-20' : leftSidebarVisible ? 'translate-x-24 scale-x-90' : rightSidebarVisible ? '-translate-x-40 scale-x-[.7]' : 'w-[100vw]'}`
+  const tw = `flex m-0 duration-300 transition-all my-auto ${leftSidebarVisible && rightSidebarVisible ? 'scale-x-[.6] -translate-x-20' : leftSidebarVisible ? 'translate-x-36 scale-90' : rightSidebarVisible ? '-translate-x-36 scale-[.7]' : 'w-[100vw]'}`
 
   console.log(`tw: ${tw}`);
 
@@ -95,15 +96,23 @@ export default function Layout({
   return (
     <section className='mx-0 w-full h-full' ref={() => setPageLoaded(true)}>
       <Panel pt={{ content: { className: 'flex-col w-full p-0 relative' } }}>
-        <Menubar start={start} model={items} end={end} className='w-full' pt={{ menuitem: { className: 'mx-6' } }} />
+        <Menubar start={start} model={items} end={end} className='w-full' pt={{root:{className:'fixed z-40 top-12 left-0'}, menuitem: { className: 'mx-6' } }} />
       </Panel>
       <Sidebar modal={false} dismissable={false} closeIcon='pi pi-arrow-left' pt={{ root: { className: 'w-[12rem] relative' } }} header='Block Gallery' visible={leftSidebarVisible} onHide={() => setLeftSidebarVisible(false)} >
-        <Panel className='relative'>
-          {pageLoaded && <ImagePlaceholder />}
+        <Panel className='relative space-y-4'>
+          {pageLoaded && (
+          <>
+          <h1 className='m-4 text-center'>Layout</h1>
+          <Divider pt={{root:{className:'border-white border-solid border-[.01px]'}}} />
+          <h1 className='m-4 text-center'>Content</h1>
+          <ImagePlaceholder canEdit={false} width='50px' height='50px' />
+          </>
+          )}
         </Panel>
       </Sidebar>
       <div className={tw}>
         {children}
+        </div>
         <Sidebar header={selectedComponentTemplate?.displayName} position='right' visible={rightSidebarVisible} onHide={() => setRightSidebarVisible(false)} closeIcon='pi pi-arrow-right' modal={false} dismissable={false} >
           <Panel >
             {selectedComponentTemplate?.props?.style && Object.entries(selectedComponentTemplate?.props?.style as ItemProps).map(([key, value]) => {
@@ -145,7 +154,7 @@ export default function Layout({
 
                   <div key={key} className='grid grid-flow-dense items-center' style={{ gridTemplateColumns: `minmax(0, 2fr) minmax(0, 1fr) ${isLengthPercentage ? 'minmax(0, 2fr)' : ''}` }}>
                     <label htmlFor={key} className='m-2'>{displayName}</label>
-                    <InputText id={key} value={isLengthPercentage ? length as string : value} onChange={e => {
+                    <InputText id={key} disabled={!selectedComponentTemplate.canEdit} value={isLengthPercentage ? length as string : value || ''} onChange={e => {
                       const props = selectedComponentTemplate?.props;
                       const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: isLengthPercentage ? `${e.target.value}${unit}` : e.target.value } } }
                       dispatch(setSelectedComponentTemplate(newTemplate));
@@ -158,7 +167,7 @@ export default function Layout({
 
                     }} />
 
-                    {isLengthPercentage && <Dropdown options={units} value={unit} onChange={(e) => {
+                    {isLengthPercentage && <Dropdown disabled={!selectedComponentTemplate.canEdit} options={units} value={unit} onChange={(e) => {
                       const props = selectedComponentTemplate?.props;
                       const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: `${length}${e.value}` } } };
                       dispatch(setSelectedComponentTemplate(newTemplate));
@@ -182,7 +191,7 @@ export default function Layout({
             })}
           </Panel>
         </Sidebar>
-      </div>
+
     </section>
   )
 }

@@ -15,28 +15,25 @@ interface Size {
   height: number
 }
 
-function ImagePlaceholder() {
+function ImagePlaceholder({  id, canEdit, width, height, dragAction }: { id?: string, canEdit: boolean, width?: string | undefined, height?: string | undefined, dragAction?:'move' | 'copy' | undefined }) {
 
-  const blockId = useMemo(() => crypto.randomUUID(), []);
+  const blockId = useMemo(() => id || crypto.randomUUID(), []);
 
   const [componentTemplate, setComponentTemplate] = useState<ComponentTemplate>({
     id: blockId,
     componentName: 'ImagePlaceholder',
     displayName: 'Image Placeholder',
+    canEdit,
+    dragAction: dragAction,
     props: {
       style: {
-        width: '100%',
-        height: '100%',
+        width: width || '220px',
+        height: height || '132px'
       }
     }
   })
 
-  const store = useAppStore();
-
   const dispatch = useAppDispatch();
-
-  // const store = useAppStore();
-  // console.log(`store:`, store);
 
   console.log(`ImagePlaceholder`);
   const ref: any = useRef<any>(null);
@@ -59,7 +56,7 @@ function ImagePlaceholder() {
   }
 
   const initRef = (node: Element) => {
-    if(!node) return;
+    if (!node) return;
     console.log('initRef');
     ref.current = node;
     // setRect(ref.current.getBoundingClientRect());
@@ -78,26 +75,27 @@ function ImagePlaceholder() {
       console.log(`size:`, size);
       setRect({ width: size.inlineSize, height: size.blockSize });
     })
-      
+
     observer.current.observe(ref.current);
 
   }, [dispatch])
 
   return (
     <Container
+      id={blockId}
       containerId={idRef.current}
       draggable
       onDragStart={dragStartHandler}
       onClick={clickHandler}
-      className="z-0 bg-gray-300 relative m-auto"
+      className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
-      style={template?.props?.style as ItemProps}
+      style={template?.props?.style as ItemProps || {}}
     >
-      <div className="bg-transparent flex align-middle justify-center h-fit p-0 z-10  relative m-0">
-        <i className='pi pi-image text-4xl text-black z-20 m-0 bg-gray-300' />
+      <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
+        <span className='pi pi-image text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300' />
       </div>
-      {rect && <svg className={`absolute bg-gray-300 m-0 p-auto left-0 top-0 h-[${rect.height}px] w-[${rect.width}px] [z-index:9]`} viewBox={`0 0 ${rect.width} ${rect.height}`} xmlns="http://www.w3.org/2000/svg">
-        <line x1="0" y1="0" x2={rect.width} y2={rect.height} stroke="black" />
+      {rect && <svg className={`absolute top-0 bg-gray-300 h-[${rect.height}px] w-[${rect.width}px] [z-index:9]`} viewBox={`0 0 ${rect.width} ${rect.height}`} xmlns="http://www.w3.org/2000/svg">
+        <line x1="0" y1={rect.height} x2={rect.width} y2="0" stroke="black" />
       </svg>}
     </Container>
   )

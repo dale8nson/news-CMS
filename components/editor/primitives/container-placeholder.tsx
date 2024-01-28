@@ -20,18 +20,14 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   const ref = useRef<HTMLDivElement>(null);
   const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
 
-  // const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
   const store = useAppStore();
-  // const BlockRegistry = useAppSelector(state => { state.BlockRegistry})
+
   const Registry = useContext(BlockRegistry)
-  // if(!!selectedItemProps) {
-  
-  // console.log(`component:`, componentName);
 
   const dragStartHandler: DragEventHandler = (e) => {
     e.preventDefault();
   }
-  
+
   const dragOverHandler: DragEventHandler = (e) => {
     e.preventDefault();
 
@@ -48,27 +44,29 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
     e.preventDefault();
     e.stopPropagation();
     const selectedComponentTemplate = store.getState().editorLayoutSlice.selectedComponentTemplate;
-    const { componentName, props } = selectedComponentTemplate as ComponentTemplate;
+    const { componentName, dragAction,  props } = selectedComponentTemplate as ComponentTemplate;
 
-    // ref?.current?.classList.replace('h-full', 'h-max');
     ref?.current?.classList.replace('bg-white', 'bg-gray-400');
-    // ref?.current?.classList.replace('w-full', 'w-auto');
     console.log(`BlockRegistry:`, Registry);
-    const block = Registry[componentName].el({...props}, null);
+    const block = Registry[componentName].el({ ...props, canEdit: true, dragAction:'move', id: selectedComponentTemplate?.dragAction === 'move' ? selectedComponentTemplate?.id : null }, null);
     console.log(`block:`, block);
 
     setBlocks([...blocks as ReactElement[], block]);
+
+    if(dragAction === 'move') {
+      const element = document.getElementById(selectedComponentTemplate?.id as string);
+      element?.remove();
+    }
   }
 
   console.log(`blocks:`, blocks);
-  
 
   return (
     <>
       {parentNode && createPortal(blocks, parentNode as Element)}
-      <div draggable={false} className={`bg-gray-400 w-full z-30 ${className}`} style={{minHeight:'4vw', position: 'relative'}} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
-        <div className='' draggable={false} style={{ width: '100%', height:'max-content', display: 'flex', flexDirection: 'column' }} >
-          <i className='pi pi-plus p-2 justify-center align-center text-4xl text-black' draggable={false} />
+      <div draggable={false} className={`bg-gray-400 w-full z-30 ${className}`} style={{ minHeight: '4vw', position: 'relative' }} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
+        <div className='flex items-center justify-items-center' draggable={false} style={{ width: '100%', height: 'max-content', display: 'flex', flexDirection: 'column' }} >
+          <i className='pi pi-plus p-2 text-4xl text-black' draggable={false} />
         </div>
       </div>
     </>

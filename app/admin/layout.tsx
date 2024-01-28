@@ -18,7 +18,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
     return {
       template: () => {
-        
+
         return (
           <Link href={href} >{crumb}</Link>
         )
@@ -32,8 +32,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
 
   return (
     <section>
-      <BreadCrumb home={home} model={crumbs} className='bg-[--highlight-bg]' pt={{ root: { className: 'w-full mx-0' } }} />
-      {children}
+      <BreadCrumb home={home} model={crumbs} className='bg-[--highlight-bg] z-[100]' pt={{ root: { className: 'w-full mx-0' } }} />
+      <div>
+        {children}
+      </div>
     </section>
   )
 }

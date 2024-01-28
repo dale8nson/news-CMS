@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <StoreProvider>
         <BlockRegistryProvider>
-        <body className='w-screen h-screen'>{children}</body>
+        <body className='w-screen h-screen !box-border ![& *:box-border]'>{children}</body>
         </BlockRegistryProvider>
       </StoreProvider>
     </html>

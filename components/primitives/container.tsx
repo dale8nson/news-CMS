@@ -11,6 +11,7 @@ import { ItemProps } from "@/lib/editor-layout-slice";
 const Container = forwardRef(
   function Container(
     {
+      id,
       containerId,
       children,
       className = '',
@@ -26,6 +27,7 @@ const Container = forwardRef(
       onClick,
       style
     }: {
+      id?: string,
       containerId?: string,
       children?: ReactNode,
       className?: string,
@@ -89,7 +91,7 @@ const Container = forwardRef(
 
     return (
       <div
-        id={containerId}
+        id={id}
         className={className}
         ref={initRef}
         draggable={draggable}
@@ -105,7 +107,7 @@ const Container = forwardRef(
       >
         {mode === 'editor' && <div draggable={false} ref={containerRef} className="flex-col justify-evenly" />}
         {mode !== 'editor' && children}
-        {mode === 'editor' && <div className="w-full h-full relative" draggable={false}><ContainerPlaceholder parentNode={parentNode} className='z-20' /></div>}
+        {mode === 'editor' && <div className="w-full h-full" draggable={false}><ContainerPlaceholder parentNode={parentNode} className='z-20' /></div>}
       </div>
     )
   });
