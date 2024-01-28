@@ -15,7 +15,7 @@ const Container = forwardRef(
       containerId,
       children,
       className = '',
-      mode = 'presentation',
+      editable,
       draggable,
       tabIndex,
       onDragStart,
@@ -31,7 +31,8 @@ const Container = forwardRef(
       containerId?: string,
       children?: ReactNode,
       className?: string,
-      mode?: 'editor' | 'presentation',
+      mode?: 'dummy' | 'content' | 'preview',
+      editable?: boolean,
       draggable?: boolean,
       tabIndex?: number
       onDragStart?: DragEventHandler,
@@ -45,18 +46,16 @@ const Container = forwardRef(
     },
     ref?: any) {
     console.log(`Container`);
-    const store = useAppStore();
     const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
     const containerRef = useRef<any>(null);
     const [parentNode, setParentNode] = useState<Element | null>(null);
+    const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
+    console.log(`editMode: ${editMode}`);
+
+    console.log(`editable: ${editable}`);
 
     const dragStartHandler: DragEventHandler = (e) => {
-      console.log(`dragStartHandler`);
-      const target = e.target as HTMLDivElement;
-      setDraggedId(target.id);
-      console.log(`store.getState():`, store.getState());
-      e.dataTransfer.setData('text/html', target.innerHTML);
-      e.dataTransfer.dropEffect = "copy";
+
     }
 
     const dragOverHandler: DragEventHandler = (e) => {
@@ -64,15 +63,8 @@ const Container = forwardRef(
 
     }
 
-    // const dropHandler: DragEventHandler = (e) => {
-    //   e.preventDefault();
-
-    //   const block = createElement(BlockRegistry[component], {...props,key: crypto.randomUUID()}, null);
-    //   setBlocks([...blocks as ReactElement[], block]);
-    // }
-
     const initRef = (node: any) => {
-      if(!node) return;
+      if (!node) return;
 
       if (!!ref) {
         if (typeof ref === 'function') {
@@ -80,7 +72,6 @@ const Container = forwardRef(
         } else {
           ref.current = node;
         }
-        // if(!!containerRef) containerRef.current = node;
       }
     }
 
@@ -105,9 +96,9 @@ const Container = forwardRef(
         onClick={onClick}
         style={style}
       >
-        {mode === 'editor' && <div draggable={false} ref={containerRef} className="flex-col justify-evenly" />}
-        {mode !== 'editor' && children}
-        {mode === 'editor' && <div className="w-full h-full" draggable={false}><ContainerPlaceholder parentNode={parentNode} className='z-20' /></div>}
+        { <div draggable={editable && editMode === 'dummy'} ref={containerRef} className="flex-col justify-evenly" />}
+        {children}
+        { <div className={`w-full h-full ${editMode !== 'dummy' || !editable ? 'hidden': ''}`} draggable={false}><ContainerPlaceholder parentNode={parentNode} className={`z-20`} /></div>}
       </div>
     )
   });

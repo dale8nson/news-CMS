@@ -35,10 +35,10 @@ const Page = () => {
 
   return (
     <div className={`flex-col !sticky !top-[100px] !left-0 m-0 `} style={{...pageTemplate?.props.style}} onClick={clickHandler} >
-      <Container className='border-dashed border-gray-300 border-2 relative' style={{display:'flex', flex:1, height:'max-content' }} >
-        <Container mode={'editor'} className='hover:border-solid hover:border-gray-300 border-2 border-transparent relative flex-col' style={{width:'50%', height:'100%', }} />
-        <Container mode={'editor'} className="hover:border-solid hover:border-gray-300 border-transparent border-2 flex-col relative w-4/12" style={{height:'max-content'}} />
-        <Container {...{mode:'editor', className:'hover:border-solid   hover:border-gray-300 border-transparent h-full border-2 flex-col relative w-4/12'}} />
+      <Container editable={false} className='border-dashed border-gray-300 border-2 relative' style={{display:'flex', flex:1, height:'max-content' }} >
+        <Container editable={true} className='hover:border-solid hover:border-gray-300 border-2 border-transparent relative flex-col' style={{width:'50%', height:'100%', }} />
+        <Container editable={true} className="hover:border-solid hover:border-gray-300 border-transparent border-2 flex-col relative w-4/12" style={{height:'max-content'}} />
+        <Container editable={true} {...{className:'hover:border-solid   hover:border-gray-300 border-transparent h-full border-2 flex-col relative w-4/12'}} />
       </Container>
     </div>
   )

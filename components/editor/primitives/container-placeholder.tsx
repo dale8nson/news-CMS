@@ -13,7 +13,7 @@ import { registerBlock } from "@/lib/block-registry";
 import { BlockRegistryProvider } from "@/components";
 import { BlockRegistry } from "@/components/block-registry-provider";
 
-const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element | null, className: string }) => {
+const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element | null, className?: string }) => {
   console.log(`ContainerPlaceHolder`);
   const dispatch = useAppDispatch();
 
@@ -64,9 +64,9 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   return (
     <>
       {parentNode && createPortal(blocks, parentNode as Element)}
-      <div draggable={false} className={`bg-gray-400 w-full z-30 ${className}`} style={{ minHeight: '4vw', position: 'relative' }} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
-        <div className='flex items-center justify-items-center' draggable={false} style={{ width: '100%', height: 'max-content', display: 'flex', flexDirection: 'column' }} >
-          <i className='pi pi-plus p-2 text-4xl text-black' draggable={false} />
+      <div draggable={false} className={`relative bg-gray-400 w-full h-full z-30 flex-col justify-items-center items-center ${className}`} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
+        <div className='flex items-center justify-items-center m-auto' draggable={false} >
+          <span className='pi pi-plus p-2 text-4xl text-black m-auto' draggable={false} />
         </div>
       </div>
     </>

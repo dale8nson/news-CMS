@@ -1,6 +1,5 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useState } from "react";
 import { ContainerPlaceholder, ImagePlaceholder, ArticleGroup1, Container } from ".";
-import { createElement } from "react";
 
 const id = () => crypto.randomUUID();
 

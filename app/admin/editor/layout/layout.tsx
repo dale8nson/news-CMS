@@ -12,9 +12,10 @@ import { InputNumber } from 'primereact/inputnumber'
 import { Panel } from 'primereact/panel';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Divider } from 'primereact/divider';
-import { setSelectedComponentTemplate, setPageTemplate, updateComponentTemplate } from '@/lib/editor-layout-slice';
+import { setSelectedComponentTemplate, setPageTemplate, updateComponentTemplate, setEditMode } from '@/lib/editor-layout-slice';
 import type { ItemProps } from '@/lib/editor-layout-slice';
 import ImagePlaceholder from '@/components/editor/primitives/image-placeholder';
+import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
 import type { PageTemplate } from "@/lib/editor-layout-slice";
 
 import { Dropdown } from 'primereact/dropdown';
@@ -53,7 +54,10 @@ export default function Layout({
   const [modeChecked, setModeChecked] = useState(false);
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
   const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
+  const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
   const dispatch = useAppDispatch();
+
+  const selectOptions = [{label:'Dummy', value:'dummy'}, {label:'Content', value:'content'}, {label:'Preview', value:'preview'}]
 
   const start = (
     <>
@@ -65,9 +69,7 @@ export default function Layout({
     <>
       <div className='space-x-4 flex'>
         <div className='flex align-baseline space-x-4' >
-          <h1>Dummy</h1>
-          <InputSwitch className='m-auto' disabled checked={modeChecked} />
-          <h1>Content</h1>
+          <SelectButton value={editMode} allowEmpty={false} options={selectOptions} optionLabel='label' onChange={e => dispatch(setEditMode(e.value)) } />
         </div>
         <Button className='p-button' icon='pi pi-sliders-h text-3xl' onClick={() => setRightSidebarVisible(true)} />
       </div>
@@ -87,7 +89,7 @@ export default function Layout({
     }
   ]
 
-  const tw = `flex m-0 duration-300 transition-all my-auto ${leftSidebarVisible && rightSidebarVisible ? 'scale-x-[.6] -translate-x-20' : leftSidebarVisible ? 'translate-x-36 scale-90' : rightSidebarVisible ? '-translate-x-36 scale-[.7]' : 'w-[100vw]'}`
+  const tw = `flex m-0 duration-300 transition-all my-auto ${leftSidebarVisible && rightSidebarVisible ? 'scale-[.6] -translate-x-16' : leftSidebarVisible ? 'translate-x-24 scale-90' : rightSidebarVisible ? '-translate-x-36 scale-[.7]' : 'w-[100vw]'}`
 
   console.log(`tw: ${tw}`);
 
@@ -105,7 +107,7 @@ export default function Layout({
           <h1 className='m-4 text-center'>Layout</h1>
           <Divider pt={{root:{className:'border-white border-solid border-[.01px]'}}} />
           <h1 className='m-4 text-center'>Content</h1>
-          <ImagePlaceholder canEdit={false} width='50px' height='50px' />
+          <ImagePlaceholder editable={false} width='50px' height='50px' />
           </>
           )}
         </Panel>

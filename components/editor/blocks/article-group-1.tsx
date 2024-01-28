@@ -9,14 +9,14 @@ const ArticleGroup1 = () => {
 
 
   return (
-    <Container row columnSpan={4} className="border-dashed border-1" mode='editor' >
-      <Container column columnSpan={4} className='h-full border-dashed border-1' >
+    <Container className="border-dashed border-1" mode='editor' >
+      <Container className='h-full border-dashed border-1' >
         <ContainerPlaceholder />
       </Container>
-      <Container column columnSpan={8} className="h-full border-dashed border-1" >
+      <Container className="h-full border-dashed border-1" >
         <ContainerPlaceholder />
       </Container>
-      <Container column columnSpan={4} className="h-full border-dashed border-1" >
+      <Container className="h-full border-dashed border-1" >
         <ContainerPlaceholder />
       </Container>
     </Container>

@@ -15,7 +15,7 @@ interface Size {
   height: number
 }
 
-function ImagePlaceholder({  id, canEdit, width, height, dragAction }: { id?: string, canEdit: boolean, width?: string | undefined, height?: string | undefined, dragAction?:'move' | 'copy' | undefined }) {
+function ImagePlaceholder({  id, editable: canEdit, width, height, dragAction }: { id?: string, editable: boolean, width?: string | undefined, height?: string | undefined, dragAction?:'move' | 'copy' | undefined }) {
 
   const blockId = useMemo(() => id || crypto.randomUUID(), []);
 
@@ -34,6 +34,8 @@ function ImagePlaceholder({  id, canEdit, width, height, dragAction }: { id?: st
   })
 
   const dispatch = useAppDispatch();
+
+  const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
 
   console.log(`ImagePlaceholder`);
   const ref: any = useRef<any>(null);
@@ -84,9 +86,10 @@ function ImagePlaceholder({  id, canEdit, width, height, dragAction }: { id?: st
     <Container
       id={blockId}
       containerId={idRef.current}
-      draggable
+      draggable={editMode === 'dummy'}
       onDragStart={dragStartHandler}
       onClick={clickHandler}
+      editable={false}
       className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
       style={template?.props?.style as ItemProps || {}}

@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction, CaseReducer } from "@reduxjs/toolkit";
+import { actionAsyncStorage } from "next/dist/client/components/action-async-storage.external";
 import { staticGenerationAsyncStorage } from "next/dist/client/components/static-generation-async-storage.external";
 
 export type Prop = string | number | null;
@@ -37,12 +38,15 @@ type State = {
   pageTemplate: PageTemplate | null,
   componentTemplates:{[id: string]: ComponentTemplate } | null,
   components: {[id: string]: Component } | null
+  editMode: 'dummy' | 'content' | 'preview'
 }
 
 const initialState: State = {
   selectedComponentTemplate: null,
+  editMode: 'dummy',
   pageTemplate: {
     id: crypto.randomUUID(),
+    dragAction:'move',
     componentName: 'div',
     displayName: 'Default Page Template',
     canEdit: true,
@@ -71,10 +75,11 @@ const editorLayoutSlice = createSlice({
     registerComponentTemplate: (state, action) => ({ ...state, componentTemplates: {...state.componentTemplates,  [action.payload.id]: action.payload } }),
     updateComponentTemplate: (state, action) => ({ ...state, componentTemplates: {...state.componentTemplates,  [action.payload.id]: action.payload } }),
     registerComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }}),
-    updateComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }})
+    updateComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }}),
+    setEditMode: (state, action) => ({...state, editMode: action.payload})
     }
 })
 
 export default editorLayoutSlice.reducer;
 
-export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent } = editorLayoutSlice.actions;
+export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent, setEditMode } = editorLayoutSlice.actions;
