@@ -57,7 +57,7 @@ export default function Layout({
   const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
   const dispatch = useAppDispatch();
 
-  const selectOptions = [{label:'Dummy', value:'dummy'}, {label:'Content', value:'content'}, {label:'Preview', value:'preview'}]
+  const selectOptions = [{ label: 'Dummy', value: 'dummy' }, { label: 'Content', value: 'content' }, { label: 'Preview', value: 'preview' }]
 
   const start = (
     <>
@@ -69,7 +69,7 @@ export default function Layout({
     <>
       <div className='space-x-4 flex'>
         <div className='flex align-baseline space-x-4' >
-          <SelectButton value={editMode} allowEmpty={false} options={selectOptions} optionLabel='label' onChange={e => dispatch(setEditMode(e.value)) } />
+          <SelectButton value={editMode} allowEmpty={false} options={selectOptions} optionLabel='label' onChange={e => dispatch(setEditMode(e.value))} />
         </div>
         <Button className='p-button' icon='pi pi-sliders-h text-3xl' onClick={() => setRightSidebarVisible(true)} />
       </div>
@@ -98,101 +98,104 @@ export default function Layout({
   return (
     <section className='mx-0 w-full h-full' ref={() => setPageLoaded(true)}>
       <Panel pt={{ content: { className: 'flex-col w-full p-0 relative' } }}>
-        <Menubar start={start} model={items} end={end} className='w-full' pt={{root:{className:'fixed z-40 top-12 left-0'}, menuitem: { className: 'mx-6' } }} />
+        <Menubar start={start} model={items} end={end} className='w-full' pt={{ root: { className: 'fixed z-40 top-12 left-0' }, menuitem: { className: 'mx-6' } }} />
       </Panel>
       <Sidebar modal={false} dismissable={false} closeIcon='pi pi-arrow-left' pt={{ root: { className: 'w-[12rem] relative' } }} header='Block Gallery' visible={leftSidebarVisible} onHide={() => setLeftSidebarVisible(false)} >
         <Panel className='relative space-y-4'>
           {pageLoaded && (
-          <>
-          <h1 className='m-4 text-center'>Layout</h1>
-          <Divider pt={{root:{className:'border-white border-solid border-[.01px]'}}} />
-          <h1 className='m-4 text-center'>Content</h1>
-          <ImagePlaceholder editable={false} width='50px' height='50px' />
-          </>
+            <>
+              <h1 className='m-4 text-center'>Layout</h1>
+              <Divider pt={{ root: { className: 'border-white border-solid border-[.01px]' } }} />
+              <h1 className='m-4 text-center'>Content</h1>
+              <ImagePlaceholder editable={false} width='50px' height='50px' />
+            </>
           )}
         </Panel>
       </Sidebar>
       <div className={tw}>
         {children}
-        </div>
-        <Sidebar header={selectedComponentTemplate?.displayName} position='right' visible={rightSidebarVisible} onHide={() => setRightSidebarVisible(false)} closeIcon='pi pi-arrow-right' modal={false} dismissable={false} >
-          <Panel >
-            {selectedComponentTemplate?.props?.style && Object.entries(selectedComponentTemplate?.props?.style as ItemProps).map(([key, value]) => {
-              const keywords = key.match(/([a-z]+?(?=[A-Z]))|([A-Z].+)|^[a-z]+$/g);
-              console.log(`keywords:`, keywords);
-              if (keywords?.length) {
-                const firstWord = keywords[0];
-                if (firstWord.length > 0) {
-                  const firstLetter = firstWord[0].toUpperCase();
-                  console.log(`firstLetter:`, firstLetter);
-                  keywords[0] = firstWord.replace(/^./, firstLetter);
-                }
+      </div>
+      <Sidebar header={selectedComponentTemplate?.displayName} position='right' visible={rightSidebarVisible} onHide={() => setRightSidebarVisible(false)} closeIcon='pi pi-arrow-right' modal={false} dismissable={false} >
+        <Panel >
+          {selectedComponentTemplate?.editable && selectedComponentTemplate?.props?.style && Object.entries(selectedComponentTemplate?.props?.style as ItemProps).map(([key, value]) => {
+            const keywords = key.match(/([a-z]+?(?=[A-Z]))|([A-Z].+)|^[a-z]+$/g);
+            console.log(`keywords:`, keywords);
+            if (keywords?.length) {
+              const firstWord = keywords[0];
+              if (firstWord.length > 0) {
+                const firstLetter = firstWord[0].toUpperCase();
+                console.log(`firstLetter:`, firstLetter);
+                keywords[0] = firstWord.replace(/^./, firstLetter);
               }
+            }
 
-              const displayName = keywords?.join(' ');
-              console.log(`displayName:`, displayName);
+            const displayName = keywords?.join(' ');
+            console.log(`displayName:`, displayName);
 
-              if (typeof value === 'string') {
-                let length: string | null = null;
-                let unit: string | null = null;
-                let isLengthPercentage = false;
-                if (key.match(/([wW]idth|[hH]eight|margin|padding)/)) {
-                  const lengthPercentage = value.match(/(\d{1,4})|(%|px|vw|vh)/g);
-                  if (lengthPercentage?.length) {
-                    if (lengthPercentage.length > 1) {
-                      length = lengthPercentage?.[0] as string;
-                      unit = lengthPercentage?.[1] as string;
-                    }
-                  } else {
-                    length = '0';
-                    unit = '%';
+            if (typeof value === 'string') {
+              let length: string | null = null;
+              let unit: string | null = null;
+              let isLengthPercentage = false;
+              if (key.match(/([wW]idth|[hH]eight|margin|padding)/)) {
+                const lengthPercentage = value.match(/(\d{1,4})|(%|px|vw|vh)/g);
+                if (lengthPercentage?.length) {
+                  if (lengthPercentage.length > 1) {
+                    length = lengthPercentage?.[0] as string;
+                    unit = lengthPercentage?.[1] as string;
                   }
-                  isLengthPercentage = true;
+                } else {
+                  length = '0';
+                  unit = '%';
                 }
-
-                return (
-
-                  // <div  className='flex-col w-full m-4'>
-
-                  <div key={key} className='grid grid-flow-dense items-center' style={{ gridTemplateColumns: `minmax(0, 2fr) minmax(0, 1fr) ${isLengthPercentage ? 'minmax(0, 2fr)' : ''}` }}>
-                    <label htmlFor={key} className='m-2'>{displayName}</label>
-                    <InputText id={key} disabled={!selectedComponentTemplate.canEdit} value={isLengthPercentage ? length as string : value || ''} onChange={e => {
-                      const props = selectedComponentTemplate?.props;
-                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: isLengthPercentage ? `${e.target.value}${unit}` : e.target.value } } }
-                      dispatch(setSelectedComponentTemplate(newTemplate));
-
-                      if (selectedComponentTemplate.id === pageTemplate?.id) {
-                        dispatch(setPageTemplate(newTemplate))
-                      } else {
-                        dispatch(updateComponentTemplate(newTemplate))
-                      }
-
-                    }} />
-
-                    {isLengthPercentage && <Dropdown disabled={!selectedComponentTemplate.canEdit} options={units} value={unit} onChange={(e) => {
-                      const props = selectedComponentTemplate?.props;
-                      const newTemplate = { ...selectedComponentTemplate, props: { ...props, style: { ...props?.style as ItemProps, [key]: `${length}${e.value}` } } };
-                      dispatch(setSelectedComponentTemplate(newTemplate));
-                      if (selectedComponentTemplate.id === pageTemplate?.id) {
-                        dispatch(setPageTemplate(newTemplate))
-                      } else {
-                        dispatch(updateComponentTemplate(newTemplate));
-                      }
-                    }}
-                    />}
-                  </div>
-                  // </div>
-                )
+                isLengthPercentage = true;
               }
-              if (typeof value === 'number') {
-                <>
-                  <label htmlFor={key}>{displayName}</label>
-                  <InputNumber id={key} className='text-black' />
-                </>
-              }
-            })}
-          </Panel>
-        </Sidebar>
+
+              return (
+
+                <div key={key} className='grid grid-flow-dense items-center' style={{ gridTemplateColumns: `minmax(0, 2fr) minmax(0, 1fr) ${isLengthPercentage ? 'minmax(0, 2fr)' : ''}` }}>
+                  <label htmlFor={key} className='m-2'>{displayName}</label>
+                  <InputText id={key} disabled={!selectedComponentTemplate.editable} value={isLengthPercentage ? length as string : value || ''} onChange={e => {
+                    const props = selectedComponentTemplate?.props;
+                    const newTemplate = { ...selectedComponentTemplate, selectOnMount: false, props: { ...props, style: { ...props?.style as ItemProps, [key]: isLengthPercentage ? `${e.target.value}${unit}` : e.target.value } } }
+                    console.log(`newTemplate:`, newTemplate);
+
+
+                    if (selectedComponentTemplate.id === pageTemplate?.id) {
+                      dispatch(setPageTemplate(newTemplate))
+                    } else {
+                      dispatch(updateComponentTemplate(newTemplate))
+                    }
+
+                    dispatch(setSelectedComponentTemplate(newTemplate));
+
+                  }} />
+
+                  {isLengthPercentage && <Dropdown disabled={!selectedComponentTemplate.editable} options={units} value={unit || ''} onChange={(e) => {
+                    const props = selectedComponentTemplate?.props;
+                    const newTemplate = { ...selectedComponentTemplate, editable: true, selectOnMount: false, props: { ...props, style: { ...props?.style as ItemProps, [key]: `${length}${e.value}` } } };
+
+                    dispatch(setSelectedComponentTemplate(newTemplate));
+
+                    if (selectedComponentTemplate.id === pageTemplate?.id) {
+                      dispatch(setPageTemplate(newTemplate))
+                    } else {
+
+                      dispatch(updateComponentTemplate(newTemplate));
+                    }
+                  }}
+                  />}
+                </div>
+              )
+            }
+            if (typeof value === 'number') {
+              <>
+                <label htmlFor={key}>{displayName}</label>
+                <InputNumber id={key} className='text-black' />
+              </>
+            }
+          })}
+        </Panel>
+      </Sidebar>
 
     </section>
   )

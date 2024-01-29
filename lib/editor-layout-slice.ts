@@ -11,7 +11,8 @@ export interface ComponentTemplate {
   id: string,
   componentName: string,
   displayName: string,
-  canEdit: boolean,
+  editable: boolean,
+  selectOnMount?: boolean | undefined,
   dragAction: 'copy' | 'move' | undefined,
   props?: ItemProps,
   children?: ComponentTemplate[]
@@ -49,7 +50,7 @@ const initialState: State = {
     dragAction:'move',
     componentName: 'div',
     displayName: 'Default Page Template',
-    canEdit: true,
+    editable: true,
     props: {
       style: {
         paddingTop: '10%',

@@ -4,5 +4,4 @@ import ArticleGroup1 from "./editor/blocks/article-group-1";
 import Container from "./primitives/container";
 import BlockRegistryProvider from "./block-registry-provider";
 
-
 export { ContainerPlaceholder, ImagePlaceholder, ArticleGroup1, Container, BlockRegistryProvider }

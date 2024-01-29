@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import Container from "@/components/primitives/container";
 import { AppStore } from "@/lib/store";
 import { useAppStore, useAppSelector, useAppDispatch } from "@/lib/hooks";
-import editorLayoutSlice, { ComponentTemplate } from "@/lib/editor-layout-slice";
+import editorLayoutSlice, { ComponentTemplate, setPageTemplate, setSelectedComponentTemplate, updateComponent } from "@/lib/editor-layout-slice";
 import ImagePlaceholder from "./image-placeholder";
 import { registerBlock } from "@/lib/block-registry";
 import { BlockRegistryProvider } from "@/components";
@@ -17,10 +17,14 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
   console.log(`ContainerPlaceHolder`);
   const dispatch = useAppDispatch();
 
-  const ref = useRef<HTMLDivElement>(null);
-  const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
+  const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate)
 
-  const store = useAppStore();
+  const componentTemplates = useAppSelector(state => state.editorLayoutSlice.componentTemplates);
+
+  const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
+
+  const ref = useRef<HTMLDivElement>(null);
+  const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);            
 
   const Registry = useContext(BlockRegistry)
 
@@ -43,12 +47,20 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
   const dropHandler: DragEventHandler = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const selectedComponentTemplate = store.getState().editorLayoutSlice.selectedComponentTemplate;
+    
     const { componentName, dragAction,  props } = selectedComponentTemplate as ComponentTemplate;
 
+    
+    // dispatch(setSelectedComponentTemplate(newTemplate));
+    // if(pageTemplate?.id === selectedComponentTemplate?.id) {
+    //   dispatch(setPageTemplate(newTemplate))
+    // } else {
+    //   dispatch(updateComponent(newTemplate));
+    // }
+
     ref?.current?.classList.replace('bg-white', 'bg-gray-400');
-    console.log(`BlockRegistry:`, Registry);
-    const block = Registry[componentName].el({ ...props, canEdit: true, dragAction:'move', id: selectedComponentTemplate?.dragAction === 'move' ? selectedComponentTemplate?.id : null }, null);
+
+    const block = Registry[componentName].el({ ...props, editable: true, selectOnMount:true, dragAction:'move', id: dragAction === 'move' ? selectedComponentTemplate?.id : null }, null);
     console.log(`block:`, block);
 
     setBlocks([...blocks as ReactElement[], block]);
@@ -57,7 +69,18 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
       const element = document.getElementById(selectedComponentTemplate?.id as string);
       element?.remove();
     }
+
+    console.log(`block:`, block);
+
+    // const element = block as ReactElement;
+
+    // const newTemplate = {...componentTemplates?.[element?.props?.id as string], id: selectedComponentTemplate?.dragAction === 'move' ? element.props.id as string: selectedComponentTemplate?.id, editable:true }
+
+    // console.log(`newTemplate:`, newTemplate);
+    // dispatch(setSelectedComponentTemplate(newTemplate));
+
   }
+
 
   console.log(`blocks:`, blocks);
 

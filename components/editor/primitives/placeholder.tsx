@@ -15,23 +15,14 @@ interface Size {
   height: number
 }
 
-function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragAction }: { id?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) {
+function Placeholder({template, icon }: {template: ComponentTemplate, icon: string }) {
 
-  const blockId = useMemo(() => id || crypto.randomUUID(), []);
+  const blockId = useMemo(() => template.id || crypto.randomUUID(), []);
 
   const [componentTemplate, setComponentTemplate] = useState<ComponentTemplate>({
-    id: blockId,
+    ...template,
     componentName: 'ImagePlaceholder',
-    displayName: 'Image Placeholder',
-    editable,
-    selectOnMount,
-    dragAction: dragAction,
-    props: {
-      style: {
-        width: width || '220px',
-        height: height || '132px'
-      }
-    }
+    displayName: 'Image Placeholder'
   })
 
   const dispatch = useAppDispatch();
@@ -40,9 +31,8 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
 
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
 
-  const template = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId]);
+  const registeredTemplate = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId]) as ComponentTemplate;
 
-  console.log(`ImagePlaceholder`);
   const ref: any = useRef<any>(null);
   const idRef: any = useMemo(() => crypto.randomUUID(), []);
   const [rect, setRect] = useState<Size>();
@@ -52,15 +42,15 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     console.log(`dragStartHandler`);
     // e.preventDefault()
     e.stopPropagation();
-    dispatch(setSelectedComponentTemplate(template || componentTemplate));
+    dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
   }
 
   const clickHandler: MouseEventHandler = (e) => {
     console.log(`clickHandler`);
     e.preventDefault();
     e.stopPropagation();
-    if (editable) {
-      dispatch(setSelectedComponentTemplate(template));
+    if (registeredTemplate.editable) {
+      dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
   }
 
@@ -70,10 +60,8 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     ref.current = node;
   }
 
-  
-
   useEffect(() => {
-    dispatch(registerComponentTemplate(template || componentTemplate));
+    dispatch(registerComponentTemplate(registeredTemplate || componentTemplate));
     if (ref.current) {
       setRect(ref.current.getBoundingClientRect());
     }
@@ -86,11 +74,11 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
 
     observer.current.observe(ref.current);
 
-    if (selectOnMount) {
-      dispatch(setSelectedComponentTemplate(template));
+    if (registeredTemplate.selectOnMount) {
+      dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
 
-  }, [dispatch, template, componentTemplate, selectOnMount])
+  }, [dispatch, componentTemplate, registeredTemplate])
 
   return (
     <Container
@@ -105,7 +93,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
       style={template?.props?.style as ItemProps || {}}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
-        <span className='pi pi-image text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300' />
+        <span className={`${icon} text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300`} />
       </div>
       {rect && <svg className={`absolute top-0 bg-gray-300 h-[${rect.height}px] w-[${rect.width}px] [z-index:9]`} viewBox={`0 0 ${rect.width} ${rect.height}`} xmlns="http://www.w3.org/2000/svg">
         <line x1="0" y1={rect.height} x2={rect.width} y2="0" stroke="black" />
@@ -114,4 +102,4 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
   )
 }
 
-export default ImagePlaceholder;
+export default Placeholder;
