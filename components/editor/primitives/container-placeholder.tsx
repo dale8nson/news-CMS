@@ -20,7 +20,7 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
   const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
 
   const ref = useRef<HTMLDivElement>(null);
-  const [blocks, setBlocks] = useState<ReactNode[] | null>([]);            
+  const [blocks, setBlocks] = useState<ReactNode[] | null>([]);
 
   const Registry = useContext(BlockRegistry)
 
@@ -47,53 +47,46 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
     ref?.current?.classList.replace('bg-white', 'bg-gray-400');
 
     console.log(`selectedComponentTemplate:`, selectedComponentTemplate);
-    
-    const { componentName, dragAction,  props, id} = selectedComponentTemplate as ComponentTemplate;
+
+    const { componentName, displayName, dragAction, editable, selectOnMount, props, id } = selectedComponentTemplate as ComponentTemplate;
 
     // if(dragAction === 'move') {
     //   console.log(`componentTemplates:`, componentTemplates);
     //   console.log(`id to be removed:`, id);
-      // dispatch(deleteComponentTemplate(id as any))
-      // dispatch(updateComponent({...selectedComponentTemplate, parentId: parentNode?.id }));
-      // dispatch(setSelectedComponentTemplate({...selectedComponentTemplate, parentId: parentNode?.id }))
+    // dispatch(deleteComponentTemplate(id as any))
+    // dispatch(updateComponent({...selectedComponentTemplate, parentId: parentNode?.id }));
+    // dispatch(setSelectedComponentTemplate({...selectedComponentTemplate, parentId: parentNode?.id }))
 
     // }
 
-    let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), editable: true, selectOnMount:true, dragAction:'move'}
+    let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), editable: true, selectOnMount: true, dragAction: 'move' }
 
     const block = Registry[componentName].el(newTemplate, null);
     console.log(`block:`, block);
 
     const blk = block as ReactElement;
-    newTemplate = {...newTemplate, id: blk?.props?.id, parentId:parentNode?.getAttribute('id')};
+    newTemplate = { ...newTemplate, id: blk?.props?.id };
+    dispatch(updateComponentTemplate(newTemplate));
 
-    // if(dragAction === 'move') {
-      dispatch(updateComponentTemplate(newTemplate));
-    // }
+    const newBlockList: ReactNode[] = [...blockList, block]
 
-    console.log(`newTemplate:`, newTemplate);
+    setBlockList(newBlockList as ReactElement[])
 
-    // dispatch(registerComponentTemplate(newTemplate));
-
-    const newBlockList = blockList.toSpliced(blockList.indexOf(block as ReactElement, 1));
-
-    console.log(`setBlocks componentTemplates:`, componentTemplates);
-    setBlockList ([...newBlockList as ReactElement[], block as ReactElement])
-
-    console.log(`block:`, block);
+    // console.log(`block:`, block);
 
   }
 
-  console.log(`blockList:`, blockList);
-
   useEffect(() => {
+    
     setBlockList(blockList.filter(block => {
-      const template = componentTemplates?.[block.props.id];
-      console.log(`useEffect template:`, template);
-      return (template?.parentId === parentNode?.getAttribute('id'));
+      const blk = block as ReactElement;
+      const template = componentTemplates?.[blk?.props?.id];
+      return template?.parentId === parentNode?.getAttribute('id')
     }));
 
-  },[componentTemplates, parentNode])
+    console.log(`setBlocks componentTemplates:`, componentTemplates);
+    
+  },[componentTemplates])
 
   return (
     <>

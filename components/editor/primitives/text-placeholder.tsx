@@ -3,6 +3,7 @@ import { ComponentTemplate } from "@/lib/editor-layout-slice";
 import Placeholder from "./placeholder";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { registerComponent } from "@/lib/editor-layout-slice";
+import { stringify } from "querystring";
 
 const TextPlaceholder = ({ id, editable, selectOnMount, width, height, dragAction }: { id?: string | undefined, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) => {
 
@@ -29,8 +30,8 @@ const TextPlaceholder = ({ id, editable, selectOnMount, width, height, dragActio
     dragAction: dragAction,
     props: {
       style: {
-        width: `${maxWidth}px`,
-        height: `${maxHeight}px`
+        width:  `220px`,
+        height: `132px`
       }
     }
   }),[blockId, editable,selectOnMount, dragAction, maxWidth, maxHeight])
@@ -63,7 +64,7 @@ const TextPlaceholder = ({ id, editable, selectOnMount, width, height, dragActio
     </div>
   )
   return ( 
-      <Placeholder template={componentTemplate} icon={icon} ref={containerRef} />
+      <Placeholder template={componentTemplate} defaultTemplateOverride={{style:{width:`${maxWidth}px`, height:`${maxHeight}px`}}} icon={icon} ref={containerRef} />
   )
 }
 

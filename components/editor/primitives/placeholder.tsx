@@ -12,16 +12,10 @@ interface Size {
   height: number
 }
 
-const Placeholder = forwardRef(function Placeholder({ template, icon, iconStyle, blockIdRef }: { template: ComponentTemplate, icon: string | ReactNode, iconStyle?: ItemProps, blockIdRef?: any }, ref?: any) {
+const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateOverride, icon, iconStyle, blockIdRef }: { template: ComponentTemplate, defaultTemplateOverride?:any, icon: string | ReactNode, iconStyle?: ItemProps, blockIdRef?: any }, ref?: any) {
 
   const blockId = useMemo(() => template.id as string, [template]);
   console.log(`blockId:`, blockId);
-
-  // if (typeof blockIdRef === 'function') {
-  //   blockIdRef(blockId);
-  // } else {
-  //   blockIdRef.current = blockId;
-  // }
 
   const containerIdRef = useRef<any>(crypto.randomUUID());
 
@@ -97,7 +91,8 @@ const Placeholder = forwardRef(function Placeholder({ template, icon, iconStyle,
       editable={false}
       className="z-0 flex m-0 bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
-      style={template?.props?.style as ItemProps || {}}
+      style={registeredTemplate?.props?.style as ItemProps}
+      {...defaultTemplateOverride}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
         {typeof icon === 'string' && <span className={`text-center text-black z-20 w-full h-full m-auto  bg-gray-300 ${icon}`} style={iconStyle} />}
