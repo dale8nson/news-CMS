@@ -15,6 +15,7 @@ import { Divider } from 'primereact/divider';
 import { setSelectedComponentTemplate, setPageTemplate, updateComponentTemplate, setEditMode } from '@/lib/editor-layout-slice';
 import type { ItemProps } from '@/lib/editor-layout-slice';
 import ImagePlaceholder from '@/components/editor/primitives/image-placeholder';
+import TextPlaceholder from '@/components/editor/primitives/text-placeholder';
 import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
 import type { PageTemplate } from "@/lib/editor-layout-slice";
 
@@ -107,7 +108,10 @@ export default function Layout({
               <h1 className='m-4 text-center'>Layout</h1>
               <Divider pt={{ root: { className: 'border-white border-solid border-[.01px]' } }} />
               <h1 className='m-4 text-center'>Content</h1>
-              <ImagePlaceholder editable={false} width='50px' height='50px' />
+              <div className='!grid auto-cols-auto grid-flow-col gap-x-2'>
+              <ImagePlaceholder editable={false} width='40px' height='40px' dragAction='copy' />
+              <TextPlaceholder editable={false} width='40px' height='40px' dragAction='copy' selectOnMount={true} />
+              </div>
             </>
           )}
         </Panel>
@@ -158,7 +162,6 @@ export default function Layout({
                     const props = selectedComponentTemplate?.props;
                     const newTemplate = { ...selectedComponentTemplate, selectOnMount: false, props: { ...props, style: { ...props?.style as ItemProps, [key]: isLengthPercentage ? `${e.target.value}${unit}` : e.target.value } } }
                     console.log(`newTemplate:`, newTemplate);
-
 
                     if (selectedComponentTemplate.id === pageTemplate?.id) {
                       dispatch(setPageTemplate(newTemplate))

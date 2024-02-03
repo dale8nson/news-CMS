@@ -31,9 +31,9 @@ const Layout = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <section>
-      <BreadCrumb home={home} model={crumbs} className='bg-[--highlight-bg] z-[100]' pt={{ root: { className: 'w-full mx-0' } }} />
-      <div>
+    <section className="relative">
+      <BreadCrumb home={home} model={crumbs}  pt={{ root: { className: 'w-full mx-0 mt-0 fixed !bg-black top-0 left-0 z-50' }}} />
+      <div className="z-0 relative">
         {children}
       </div>
     </section>

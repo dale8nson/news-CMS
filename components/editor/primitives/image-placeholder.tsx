@@ -1,14 +1,10 @@
 'use client';
 import type { DragEventHandler, MouseEventHandler } from "react";
 import Container from "@/components/primitives/container";
-import { useState, useRef, useEffect, useMemo, useContext, startTransition } from "react";
-import { flushSync } from "react-dom";
-import { ReactNode, Ref, createElement } from "react";
-import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/hooks";
-import { setDraggedId, clearDraggedId } from "@/lib/rootreducer";
-import { setSelectedComponentTemplate, registerComponentTemplate, registerComponent } from "@/lib/editor-layout-slice";
-import type { ItemProps, ComponentTemplate } from "@/lib/editor-layout-slice";
-import { registerBlock } from "@/lib/block-registry";
+import { useState, useRef, useEffect, useMemo} from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setSelectedComponentTemplate, registerComponentTemplate } from "@/lib/editor-layout-slice";
+import type { ItemProps } from "@/lib/editor-layout-slice";
 
 interface Size {
   width: number,
@@ -17,9 +13,9 @@ interface Size {
 
 function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragAction }: { id?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) {
 
-  const blockId = useMemo(() => id || crypto.randomUUID(), []);
+  const blockId = useMemo(() => id || crypto.randomUUID(), [id]);
 
-  const [componentTemplate, setComponentTemplate] = useState<ComponentTemplate>({
+  const componentTemplate = useMemo(() => ({
     id: blockId,
     componentName: 'ImagePlaceholder',
     displayName: 'Image Placeholder',
@@ -32,27 +28,25 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
         height: height || '132px'
       }
     }
-  })
+  }),[blockId, editable, height, width, selectOnMount, dragAction]);
 
   const dispatch = useAppDispatch();
 
   const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
 
-  const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
-
-  const template = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId]);
+  const registeredTemplate = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId]);
 
   console.log(`ImagePlaceholder`);
   const ref: any = useRef<any>(null);
   const idRef: any = useMemo(() => crypto.randomUUID(), []);
+  
   const [rect, setRect] = useState<Size>();
   const observer = useRef<ResizeObserver>();
 
   const dragStartHandler: DragEventHandler = (e) => {
     console.log(`dragStartHandler`);
-    // e.preventDefault()
     e.stopPropagation();
-    dispatch(setSelectedComponentTemplate(template || componentTemplate));
+    dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
   }
 
   const clickHandler: MouseEventHandler = (e) => {
@@ -60,7 +54,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     e.preventDefault();
     e.stopPropagation();
     if (editable) {
-      dispatch(setSelectedComponentTemplate(template));
+      dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
   }
 
@@ -70,10 +64,10 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     ref.current = node;
   }
 
-  
-
   useEffect(() => {
-    dispatch(registerComponentTemplate(template || componentTemplate));
+
+    dispatch(registerComponentTemplate(registeredTemplate || componentTemplate));
+
     if (ref.current) {
       setRect(ref.current.getBoundingClientRect());
     }
@@ -87,10 +81,10 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     observer.current.observe(ref.current);
 
     if (selectOnMount) {
-      dispatch(setSelectedComponentTemplate(template));
+      dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
 
-  }, [dispatch, template, componentTemplate, selectOnMount])
+  }, [dispatch, registeredTemplate, componentTemplate, selectOnMount])
 
   return (
     <Container
@@ -102,7 +96,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
       editable={false}
       className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
-      style={template?.props?.style as ItemProps || {}}
+      style={registeredTemplate?.props?.style as ItemProps || {}}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
         <span className='pi pi-image text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300' />

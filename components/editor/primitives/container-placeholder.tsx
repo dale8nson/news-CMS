@@ -1,21 +1,17 @@
 'use client';
-import type { DragEventHandler, ReactElement } from "react";
-import { useRef, useState, createElement, useEffect, useContext } from 'react';
-import { renderToString } from "react-dom/server";
-import type { ReactNode, FunctionComponent, RefObject } from "react";
+import type { DragEventHandler, ReactElement, ReactNode } from "react";
+import { useRef, useState, useEffect, useContext } from 'react';
 import { createPortal } from "react-dom";
-import Container from "@/components/primitives/container";
-import { AppStore } from "@/lib/store";
-import { useAppStore, useAppSelector, useAppDispatch } from "@/lib/hooks";
-import editorLayoutSlice, { ComponentTemplate, setPageTemplate, setSelectedComponentTemplate, updateComponent } from "@/lib/editor-layout-slice";
-import ImagePlaceholder from "./image-placeholder";
-import { registerBlock } from "@/lib/block-registry";
-import { BlockRegistryProvider } from "@/components";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks";
+import { ComponentTemplate, ItemProps, setPageTemplate, setSelectedComponentTemplate, updateComponent, deleteComponentTemplate, registerComponentTemplate, updateComponentTemplate } from "@/lib/editor-layout-slice";
 import { BlockRegistry } from "@/components/block-registry-provider";
 
 const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element | null, className?: string }) => {
   console.log(`ContainerPlaceHolder`);
+  console.log(`parentNode:`, parentNode);
   const dispatch = useAppDispatch();
+
+  const [blockList, setBlockList] = useState<ReactElement[]>([]);
 
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate)
 
@@ -24,7 +20,7 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
   const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
 
   const ref = useRef<HTMLDivElement>(null);
-  const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);            
+  const [blocks, setBlocks] = useState<ReactNode[] | null>([]);            
 
   const Registry = useContext(BlockRegistry)
 
@@ -47,46 +43,61 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
   const dropHandler: DragEventHandler = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const { componentName, dragAction,  props } = selectedComponentTemplate as ComponentTemplate;
-
-    
-    // dispatch(setSelectedComponentTemplate(newTemplate));
-    // if(pageTemplate?.id === selectedComponentTemplate?.id) {
-    //   dispatch(setPageTemplate(newTemplate))
-    // } else {
-    //   dispatch(updateComponent(newTemplate));
-    // }
 
     ref?.current?.classList.replace('bg-white', 'bg-gray-400');
 
-    const block = Registry[componentName].el({ ...props, editable: true, selectOnMount:true, dragAction:'move', id: dragAction === 'move' ? selectedComponentTemplate?.id : null }, null);
+    console.log(`selectedComponentTemplate:`, selectedComponentTemplate);
+    
+    const { componentName, dragAction,  props, id} = selectedComponentTemplate as ComponentTemplate;
+
+    // if(dragAction === 'move') {
+    //   console.log(`componentTemplates:`, componentTemplates);
+    //   console.log(`id to be removed:`, id);
+      // dispatch(deleteComponentTemplate(id as any))
+      // dispatch(updateComponent({...selectedComponentTemplate, parentId: parentNode?.id }));
+      // dispatch(setSelectedComponentTemplate({...selectedComponentTemplate, parentId: parentNode?.id }))
+
+    // }
+
+    let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), editable: true, selectOnMount:true, dragAction:'move'}
+
+    const block = Registry[componentName].el(newTemplate, null);
     console.log(`block:`, block);
 
-    setBlocks([...blocks as ReactElement[], block]);
+    const blk = block as ReactElement;
+    newTemplate = {...newTemplate, id: blk?.props?.id, parentId:parentNode?.getAttribute('id')};
 
-    if(dragAction === 'move') {
-      const element = document.getElementById(selectedComponentTemplate?.id as string);
-      element?.remove();
-    }
+    // if(dragAction === 'move') {
+      dispatch(updateComponentTemplate(newTemplate));
+    // }
+
+    console.log(`newTemplate:`, newTemplate);
+
+    // dispatch(registerComponentTemplate(newTemplate));
+
+    const newBlockList = blockList.toSpliced(blockList.indexOf(block as ReactElement, 1));
+
+    console.log(`setBlocks componentTemplates:`, componentTemplates);
+    setBlockList ([...newBlockList as ReactElement[], block as ReactElement])
 
     console.log(`block:`, block);
-
-    // const element = block as ReactElement;
-
-    // const newTemplate = {...componentTemplates?.[element?.props?.id as string], id: selectedComponentTemplate?.dragAction === 'move' ? element.props.id as string: selectedComponentTemplate?.id, editable:true }
-
-    // console.log(`newTemplate:`, newTemplate);
-    // dispatch(setSelectedComponentTemplate(newTemplate));
 
   }
 
+  console.log(`blockList:`, blockList);
 
-  console.log(`blocks:`, blocks);
+  useEffect(() => {
+    setBlockList(blockList.filter(block => {
+      const template = componentTemplates?.[block.props.id];
+      console.log(`useEffect template:`, template);
+      return (template?.parentId === parentNode?.getAttribute('id'));
+    }));
+
+  },[componentTemplates, parentNode])
 
   return (
     <>
-      {parentNode && createPortal(blocks, parentNode as Element)}
+      {createPortal(blockList, parentNode as Element)}
       <div draggable={false} className={`relative bg-gray-400 w-full h-full z-30 flex-col justify-items-center items-center ${className}`} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
         <div className='flex items-center justify-items-center m-auto' draggable={false} >
           <span className='pi pi-plus p-2 text-4xl text-black m-auto' draggable={false} />

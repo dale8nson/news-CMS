@@ -1,6 +1,6 @@
 'use client';
-import type { MouseEventHandler, ReactNode, ReactElement } from "react"
-import { forwardRef, useState, createElement, useRef, useEffect } from 'react';
+import type { MouseEventHandler, ReactNode, ReactElement,  } from "react"
+import { forwardRef, useState, createElement, useRef, useEffect, useMemo } from 'react';
 import type { DragEventHandler } from "react";
 import ContainerPlaceholder from "../editor/primitives/container-placeholder";
 import { useAppStore, useAppSelector } from "@/lib/hooks";
@@ -12,7 +12,6 @@ const Container = forwardRef(
   function Container(
     {
       id,
-      containerId,
       children,
       className = '',
       editable,
@@ -46,13 +45,14 @@ const Container = forwardRef(
     },
     ref?: any) {
     console.log(`Container`);
-    const [blocks, setBlocks] = useState<ReactNode[] | [] | null>([]);
     const containerRef = useRef<any>(null);
+    const containerId = useMemo(() => crypto.randomUUID(),[])
     const [parentNode, setParentNode] = useState<Element | null>(null);
     const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
-    console.log(`editMode: ${editMode}`);
 
-    console.log(`editable: ${editable}`);
+    // console.log(`editMode: ${editMode}`);
+
+    // console.log(`editable: ${editable}`);
 
     const dragStartHandler: DragEventHandler = (e) => {
 
@@ -65,20 +65,28 @@ const Container = forwardRef(
 
     const initRef = (node: any) => {
       if (!node) return;
-
+      console.log(`initRef node.id:`, node.id);
       if (!!ref) {
         if (typeof ref === 'function') {
           ref(node)
         } else {
           ref.current = node;
-        }
+        }        
       }
     }
 
-    useEffect(() => {
-      if (!containerRef) return;
+    const initContainerRef = (node: Element) => {
+      if(!node) return;
+      containerRef.current = node as Element;
+      console.log(`containerRef id:`, containerRef.current.getAttribute('id'));
       setParentNode(containerRef.current);
-    }, [])
+    }
+
+    // useEffect(() => {
+
+      
+
+    // },[]);
 
     return (
       <div
@@ -96,9 +104,9 @@ const Container = forwardRef(
         onClick={onClick}
         style={style}
       >
-        { <div draggable={editable && editMode === 'dummy'} ref={containerRef} className="flex-col justify-evenly" />}
+        <div draggable={editable && editMode === 'dummy'} ref={initContainerRef as any} id={containerId} className="flex-col justify-evenly" />
         {children}
-        { <div className={`w-full h-full ${editMode !== 'dummy' || !editable ? 'hidden': ''}`} draggable={false}><ContainerPlaceholder parentNode={parentNode} className={`z-20`} /></div>}
+        {!!parentNode && <div className={`w-full h-full ${editMode !== 'dummy' || !editable ? 'hidden' : ''}`} draggable={false}><ContainerPlaceholder parentNode={parentNode} className={`z-20`} /></div>}
       </div>
     )
   });

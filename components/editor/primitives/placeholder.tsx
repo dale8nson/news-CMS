@@ -1,47 +1,50 @@
 'use client';
-import type { DragEventHandler, MouseEventHandler } from "react";
+import type { DragEventHandler, ForwardedRef, MouseEventHandler, RefObject } from "react";
 import Container from "@/components/primitives/container";
 import { useState, useRef, useEffect, useMemo, useContext, startTransition } from "react";
-import { flushSync } from "react-dom";
-import { ReactNode, Ref, createElement } from "react";
+import { ReactNode, Ref, createElement, forwardRef } from "react";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/hooks";
-import { setDraggedId, clearDraggedId } from "@/lib/rootreducer";
 import { setSelectedComponentTemplate, registerComponentTemplate, registerComponent } from "@/lib/editor-layout-slice";
 import type { ItemProps, ComponentTemplate } from "@/lib/editor-layout-slice";
-import { registerBlock } from "@/lib/block-registry";
 
 interface Size {
   width: number,
   height: number
 }
 
-function Placeholder({template, icon }: {template: ComponentTemplate, icon: string }) {
+const Placeholder = forwardRef(function Placeholder({ template, icon, iconStyle, blockIdRef }: { template: ComponentTemplate, icon: string | ReactNode, iconStyle?: ItemProps, blockIdRef?: any }, ref?: any) {
 
-  const blockId = useMemo(() => template.id || crypto.randomUUID(), []);
+  const blockId = useMemo(() => template.id as string, [template]);
+  console.log(`blockId:`, blockId);
 
-  const [componentTemplate, setComponentTemplate] = useState<ComponentTemplate>({
+  // if (typeof blockIdRef === 'function') {
+  //   blockIdRef(blockId);
+  // } else {
+  //   blockIdRef.current = blockId;
+  // }
+
+  const containerIdRef = useRef<any>(crypto.randomUUID());
+
+  const componentTemplate = useMemo<ComponentTemplate>(() => ({
     ...template,
-    componentName: 'ImagePlaceholder',
-    displayName: 'Image Placeholder'
-  })
+    parentId: containerIdRef.current
+  }), [template])
 
   const dispatch = useAppDispatch();
 
   const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
 
-  const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
+  const registeredTemplate = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId as string]);
 
-  const registeredTemplate = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId]) as ComponentTemplate;
+  const containerRef: any = useRef<any>(null);
+  
 
-  const ref: any = useRef<any>(null);
-  const idRef: any = useMemo(() => crypto.randomUUID(), []);
   const [rect, setRect] = useState<Size>();
   const observer = useRef<ResizeObserver>();
 
   const dragStartHandler: DragEventHandler = (e) => {
-    console.log(`dragStartHandler`);
-    // e.preventDefault()
     e.stopPropagation();
+    console.log(`registeredTemplate:`, registeredTemplate);
     dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
   }
 
@@ -49,21 +52,25 @@ function Placeholder({template, icon }: {template: ComponentTemplate, icon: stri
     console.log(`clickHandler`);
     e.preventDefault();
     e.stopPropagation();
-    if (registeredTemplate.editable) {
-      dispatch(setSelectedComponentTemplate(registeredTemplate));
-    }
+    console.log(`registeredTemplate:`, registeredTemplate);
+    dispatch(setSelectedComponentTemplate(registeredTemplate));
   }
 
   const initRef = (node: Element) => {
     if (!node) return;
     console.log('initRef');
-    ref.current = node;
+    containerRef.current = node;
+    if (ref) {
+      ref.current = node;
+    }
   }
 
   useEffect(() => {
+
     dispatch(registerComponentTemplate(registeredTemplate || componentTemplate));
-    if (ref.current) {
-      setRect(ref.current.getBoundingClientRect());
+
+    if (containerRef.current) {
+      setRect(containerRef.current.getBoundingClientRect());
     }
 
     observer.current = new ResizeObserver(entries => {
@@ -72,34 +79,35 @@ function Placeholder({template, icon }: {template: ComponentTemplate, icon: stri
       setRect({ width: size.inlineSize, height: size.blockSize });
     })
 
-    observer.current.observe(ref.current);
+    observer.current.observe(containerRef.current);
 
-    if (registeredTemplate.selectOnMount) {
-      dispatch(setSelectedComponentTemplate(registeredTemplate));
+    if (componentTemplate.selectOnMount) {
+      dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
     }
 
-  }, [dispatch, componentTemplate, registeredTemplate])
+  }, [dispatch, registeredTemplate, componentTemplate])
 
   return (
     <Container
-      id={blockId}
-      containerId={idRef.current}
+      id={template.id as string}
+      containerId={containerIdRef.current}
       draggable={editMode === 'dummy'}
       onDragStart={dragStartHandler}
       onClick={clickHandler}
       editable={false}
-      className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
+      className="z-0 flex m-0 bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
       style={template?.props?.style as ItemProps || {}}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
-        <span className={`${icon} text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300`} />
+        {typeof icon === 'string' && <span className={`text-center text-black z-20 w-full h-full m-auto  bg-gray-300 ${icon}`} style={iconStyle} />}
+        {typeof icon !== 'string' && icon}
       </div>
       {rect && <svg className={`absolute top-0 bg-gray-300 h-[${rect.height}px] w-[${rect.width}px] [z-index:9]`} viewBox={`0 0 ${rect.width} ${rect.height}`} xmlns="http://www.w3.org/2000/svg">
         <line x1="0" y1={rect.height} x2={rect.width} y2="0" stroke="black" />
       </svg>}
     </Container>
   )
-}
+})
 
 export default Placeholder;
