@@ -89,7 +89,7 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
       onDragStart={dragStartHandler}
       onClick={clickHandler}
       editable={false}
-      className="z-0 flex m-0 bg-gray-300 relative items-center justify-items-center"
+      className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
       style={registeredTemplate?.props?.style as ItemProps}
       {...defaultTemplateOverride}

@@ -11,7 +11,7 @@ interface Size {
   height: number
 }
 
-function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragAction }: { id?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) {
+function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragAction }: { id?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction: 'move' | 'copy' | 'link' | 'none' }) {
 
   const blockId = useMemo(() => id || crypto.randomUUID(), [id]);
 
@@ -24,8 +24,8 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     dragAction: dragAction,
     props: {
       style: {
-        width: width || '220px',
-        height: height || '132px'
+        width: '220px',
+        height: '132px'
       }
     }
   }),[blockId, editable, height, width, selectOnMount, dragAction]);
@@ -46,6 +46,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
   const dragStartHandler: DragEventHandler = (e) => {
     console.log(`dragStartHandler`);
     e.stopPropagation();
+    e.dataTransfer.dropEffect = dragAction;
     dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
   }
 
@@ -86,6 +87,8 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
 
   }, [dispatch, registeredTemplate, componentTemplate, selectOnMount])
 
+  const style = registeredTemplate?.props?.style as ItemProps;
+
   return (
     <Container
       id={blockId}
@@ -96,7 +99,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
       editable={false}
       className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
-      style={registeredTemplate?.props?.style as ItemProps || {}}
+      style={{width: width || style?.width , height: height || style?.height }}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
         <span className='pi pi-image text-center text-4xl text-black z-20 w-full h-full m-auto  bg-gray-300' />
