@@ -62,22 +62,39 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
     let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), editable: true, selectOnMount: true, dragAction: 'move' }
 
     const block = Registry[componentName].el(newTemplate, null);
-    console.log(`block:`, block);
-
+    
     const blk = block as ReactElement;
     newTemplate = { ...newTemplate, id: blk?.props?.id };
-    dispatch(updateComponentTemplate(newTemplate));
 
-    const newBlockList: ReactNode[] = [...blockList, block]
+    console.log(`blockList:`, blockList);
 
-    setBlockList(newBlockList as ReactElement[])
+    const isDuplicate:ReactElement | undefined = blockList.find(block => {
+      const el = block as ReactElement;
+      console.log(`block:`, el);
+      console.log(`blk block:`, blk);
+      console.log(`blk.props.id === block.props.id:`, blk.props.id === el.props.id)
+      if(blk.props.id === el?.props?.id){
+        console.log(`duplicate found`);
+        return true;
+      }
 
-    // console.log(`block:`, block);
+      return false;
+      
+    })
 
+    console.log(`isDuplicate:`, isDuplicate);
+
+    if (!isDuplicate) {
+
+      const newBlockList: ReactNode[] = [...blockList, block]
+
+      setBlockList(newBlockList as ReactElement[]);
+      dispatch(updateComponentTemplate(newTemplate));
+    }
   }
 
   useEffect(() => {
-    
+
     setBlockList(blockList.filter(block => {
       const blk = block as ReactElement;
       const template = componentTemplates?.[blk?.props?.id];
@@ -85,8 +102,8 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
     }));
 
     console.log(`setBlocks componentTemplates:`, componentTemplates);
-    
-  },[componentTemplates])
+
+  }, [componentTemplates])
 
   return (
     <>
