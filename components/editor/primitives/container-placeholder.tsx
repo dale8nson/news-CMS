@@ -19,6 +19,8 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   const componentTemplates = useAppSelector(state => state.editorLayoutSlice.componentTemplates);
 
   const blockTree = useAppSelector(state => state.editorLayoutSlice.blockTree);
+  const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
+
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -57,12 +59,12 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
 
       const block = Registry[componentName].el(newTemplate, null);
       const blk = block as ReactElement;
-      newTemplate = {...newTemplate, id: blk?.props.id }
+      newTemplate = { ...newTemplate, id: blk?.props.id }
 
       console.log(`block:`, block);
 
       if (!!parentNode) {
-        const pid = parentNode?.getAttribute('id') as string; 
+        const pid = parentNode?.getAttribute('id') as string;
         const props = blk?.props;
         let childIds: string[] = blockTree[pid] || [];
         console.log(`childIds:`, childIds);
@@ -128,6 +130,17 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
       }
       console.log(`placeHolders:`, placeHolders);
       setBlockList(placeHolders);
+
+      console.log(`blockList:`, blockList);
+      node.current = placeHolders
+        .map((blk, index) => {
+          return (
+            <>
+              {editMode === 'dummy' && <Slot key={crypto.randomUUID()} {...{ parentNode: parentNode as Element, index}} />}
+              {blk}
+            </>
+          )
+        })
     }
     // setBlockList(blockList.filter(block => {
     //   const blk = block as ReactElement;
@@ -135,20 +148,14 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
     //   return template?.parentId === parentNode?.getAttribute('id');
     // })
     // );
-    node.current = blockList
-      .map(blk => {
-        return (
-          <>
-            <Slot key={crypto.randomUUID()} {...{ parentNode: parentNode as Element, index: blk.props.index as number }} />
-            {blk}
-          </>
-        )
-      })
+   
 
 
     console.log(`setBlocks componentTemplates:`, componentTemplates);
 
-  }, [componentTemplates, node, parentNode])
+  }, [componentTemplates, node, parentNode, editMode, blockTree])
+
+
 
   return (
     <>
