@@ -3,10 +3,11 @@ import type { DragEventHandler, ReactElement, ReactNode } from "react";
 import { useRef, useState, useEffect, useContext } from 'react';
 import { createPortal } from "react-dom";
 import { useAppSelector, useAppDispatch } from "@/lib/hooks";
-import { ComponentTemplate, ItemProps, setPageTemplate, setSelectedComponentTemplate, updateComponent, deleteComponentTemplate, registerComponentTemplate, updateComponentTemplate } from "@/lib/editor-layout-slice";
+import { ComponentTemplate, ItemProps, setPageTemplate, setSelectedComponentTemplate, updateComponent, deleteComponentTemplate, registerComponentTemplate, updateComponentTemplate, setBlockTree } from "@/lib/editor-layout-slice";
 import { BlockRegistry } from "@/components/block-registry-provider";
+import Slot from "./slot";
 
-const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element | null, className?: string }) => {
+const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element | null, className?: string }) => {
   console.log(`ContainerPlaceHolder`);
   console.log(`parentNode:`, parentNode);
   const dispatch = useAppDispatch();
@@ -17,10 +18,9 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
 
   const componentTemplates = useAppSelector(state => state.editorLayoutSlice.componentTemplates);
 
-  const pageTemplate = useAppSelector(state => state.editorLayoutSlice.pageTemplate);
+  const blockTree = useAppSelector(state => state.editorLayoutSlice.blockTree);
 
   const ref = useRef<HTMLDivElement>(null);
-  const [blocks, setBlocks] = useState<ReactNode[] | null>([]);
 
   const Registry = useContext(BlockRegistry)
 
@@ -48,66 +48,111 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode?: Element 
 
     console.log(`selectedComponentTemplate:`, selectedComponentTemplate);
 
-    const { componentName, displayName, dragAction, editable, selectOnMount, props, id } = selectedComponentTemplate as ComponentTemplate;
+    const { componentName, displayName, dragAction, editable, selectOnMount, props, id, parentId } = selectedComponentTemplate as ComponentTemplate;
 
-    // if(dragAction === 'move') {
-    //   console.log(`componentTemplates:`, componentTemplates);
-    //   console.log(`id to be removed:`, id);
-    // dispatch(deleteComponentTemplate(id as any))
-    // dispatch(updateComponent({...selectedComponentTemplate, parentId: parentNode?.id }));
-    // dispatch(setSelectedComponentTemplate({...selectedComponentTemplate, parentId: parentNode?.id }))
+    console.log(`parentId: ${parentId} parentNode?.id: ${parentNode?.id}`);
 
-    // }
+    if (!parentId || parentId !== parentNode?.getAttribute('id')) {
+      let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), index: blockList.length, editable: true, selectOnMount: true, dragAction: 'move' }
 
-    let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId: parentNode?.getAttribute('id'), editable: true, selectOnMount: true, dragAction: 'move' }
+      const block = Registry[componentName].el(newTemplate, null);
+      const blk = block as ReactElement;
+      newTemplate = {...newTemplate, id: blk?.props.id }
 
-    const block = Registry[componentName].el(newTemplate, null);
-    
-    const blk = block as ReactElement;
-    newTemplate = { ...newTemplate, id: blk?.props?.id };
+      console.log(`block:`, block);
 
-    console.log(`blockList:`, blockList);
+      if (!!parentNode) {
+        const pid = parentNode?.getAttribute('id') as string; 
+        const props = blk?.props;
+        let childIds: string[] = blockTree[pid] || [];
+        console.log(`childIds:`, childIds);
+        childIds = [...childIds, props.id];
 
-    const isDuplicate:ReactElement | undefined = blockList.find(block => {
-      const el = block as ReactElement;
-      console.log(`block:`, el);
-      console.log(`blk block:`, blk);
-      console.log(`blk.props.id === block.props.id:`, blk.props.id === el.props.id)
-      if(blk.props.id === el?.props?.id){
-        console.log(`duplicate found`);
-        return true;
+        if (!!parentId && parentId !== parentNode?.id) {
+
+          console.log(`parentId: ${parentId}`);
+
+          const oldParentChildIds = blockTree[parentId as string];
+          console.log(`oldParentChildIds:`, oldParentChildIds);
+          if (!!oldParentChildIds) {
+            const index = oldParentChildIds.indexOf(id as string);
+            const oldParentNewChildIds = oldParentChildIds.toSpliced(index, 1);
+            dispatch(setBlockTree({ ...blockTree, [parentNode.getAttribute('id') as string]: childIds, [parentId]: oldParentNewChildIds }));
+          }
+
+        } else {
+
+          dispatch(setBlockTree({ ...blockTree, [parentNode.getAttribute('id') as string]: childIds }));
+        }
+
+        const placeHolders: ReactElement[] = [];
+        for (const id of childIds) {
+          const blk = blockList.find(blk => {
+            return blk?.props.id === id;
+          })
+          if (blk) {
+            placeHolders.push(blk);
+          }
+        }
+
+        setBlockList([...placeHolders, block as ReactElement]);
+
       }
 
-      return false;
-      
-    })
+      console.log(`blockList:`, blockList);
 
-    console.log(`isDuplicate:`, isDuplicate);
-
-    if (!isDuplicate) {
-
-      const newBlockList: ReactNode[] = [...blockList, block]
-
-      setBlockList(newBlockList as ReactElement[]);
       dispatch(updateComponentTemplate(newTemplate));
     }
+
   }
+
+  const node = useRef<ReactNode>();
 
   useEffect(() => {
 
-    setBlockList(blockList.filter(block => {
-      const blk = block as ReactElement;
-      const template = componentTemplates?.[blk?.props?.id];
-      return template?.parentId === parentNode?.getAttribute('id')
-    }));
+    console.log(`parentNode?.getAttribute('id'):`, parentNode?.getAttribute('id'));
+
+    let childIds: string[] = blockTree[parentNode?.getAttribute('id') as string] || [];
+
+    console.log(`childIds:`, childIds);
+    if (childIds.length > 0) {
+
+      const placeHolders: ReactElement[] = [];
+      for (const id of childIds) {
+        const block = blockList.find(blk => {
+          return blk?.props.id === id;
+        })
+        if (block) {
+          placeHolders.push(block);
+        }
+      }
+      console.log(`placeHolders:`, placeHolders);
+      setBlockList(placeHolders);
+    }
+    // setBlockList(blockList.filter(block => {
+    //   const blk = block as ReactElement;
+    //   const template = componentTemplates?.[blk?.props?.id];
+    //   return template?.parentId === parentNode?.getAttribute('id');
+    // })
+    // );
+    node.current = blockList
+      .map(blk => {
+        return (
+          <>
+            <Slot key={crypto.randomUUID()} {...{ parentNode: parentNode as Element, index: blk.props.index as number }} />
+            {blk}
+          </>
+        )
+      })
+
 
     console.log(`setBlocks componentTemplates:`, componentTemplates);
 
-  }, [componentTemplates])
+  }, [componentTemplates, node, parentNode])
 
   return (
     <>
-      {createPortal(blockList, parentNode as Element)}
+      {createPortal(node.current, parentNode as Element)}
       <div draggable={false} className={`relative bg-gray-400 w-full h-full z-30 flex-col justify-items-center items-center ${className}`} onDrop={dropHandler} onDragOver={dragOverHandler} onDragLeave={dragLeaveHandler} onDragStart={dragStartHandler} ref={ref}>
         <div className='flex items-center justify-items-center m-auto' draggable={false} >
           <span className='pi pi-plus p-2 text-4xl text-black m-auto' draggable={false} />

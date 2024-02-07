@@ -28,7 +28,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
         height: '132px'
       }
     }
-  }),[blockId, editable, height, width, selectOnMount, dragAction]);
+  }),[blockId, editable, selectOnMount, dragAction]);
 
   const dispatch = useAppDispatch();
 

@@ -21,7 +21,7 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
 
   const componentTemplate = useMemo<ComponentTemplate>(() => ({
     ...template,
-    parentId: containerIdRef.current
+    // parentId: containerIdRef.current
   }), [template])
 
   const dispatch = useAppDispatch();
@@ -29,6 +29,8 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
   const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
 
   const registeredTemplate = useAppSelector(state => state.editorLayoutSlice?.componentTemplates?.[blockId as string]);
+
+  const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate);
 
   const containerRef: any = useRef<any>(null);
   
@@ -39,7 +41,7 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
   const dragStartHandler: DragEventHandler = (e) => {
     e.stopPropagation();
     console.log(`registeredTemplate:`, registeredTemplate);
-    dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
+    dispatch(setSelectedComponentTemplate(registeredTemplate));
   }
 
   const clickHandler: MouseEventHandler = (e) => {
@@ -59,6 +61,8 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
     }
   }
 
+  const [override, setOverride] = useState(template.dragAction === 'move' ? {} : defaultTemplateOverride);
+
   useEffect(() => {
 
     dispatch(registerComponentTemplate(registeredTemplate || componentTemplate));
@@ -77,9 +81,14 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
 
     if (componentTemplate.selectOnMount) {
       dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
+
+      // setOverride(registeredTemplate) ;
+
     }
 
   }, [dispatch, registeredTemplate, componentTemplate])
+
+  
 
   return (
     <Container
@@ -92,7 +101,7 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
       className="z-0 flex m-auto bg-gray-300 relative items-center justify-items-center"
       ref={initRef}
       style={registeredTemplate?.props?.style as ItemProps}
-      {...defaultTemplateOverride}
+      {...{...override}}
     >
       <div className="bg-transparent flex  z-10 relative items-center justify-items-center m-auto">
         {typeof icon === 'string' && <span className={`text-center text-black z-20 w-full h-full m-auto  bg-gray-300 ${icon}`} style={iconStyle} />}

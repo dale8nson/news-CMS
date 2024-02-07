@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { registerComponent } from "@/lib/editor-layout-slice";
 import { stringify } from "querystring";
 
-const TextPlaceholder = ({ id, editable, selectOnMount, width, height, dragAction }: { id?: string | undefined, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) => {
+const TextPlaceholder = ({ id, editable, parentId, selectOnMount, width, height, dragAction }: { id?: string | undefined, editable: boolean, parentId?: string, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction?: 'move' | 'copy' | undefined }) => {
 
   
   const blockId = useMemo(() => id as string || crypto.randomUUID(),[id]);
@@ -28,13 +28,14 @@ const TextPlaceholder = ({ id, editable, selectOnMount, width, height, dragActio
     editable,
     selectOnMount,
     dragAction: dragAction,
+    parentId,
     props: {
       style: {
         width:  `220px`,
         height: `132px`
       }
     }
-  }),[blockId, editable,selectOnMount, dragAction, maxWidth, maxHeight])
+  }),[blockId, dragAction, editable, selectOnMount, parentId])
 
   let observer = useRef<ResizeObserver>();
   const containerRef = useRef<Element>(null);

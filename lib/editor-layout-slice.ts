@@ -7,6 +7,7 @@ export interface ItemProps { [prop: string]: Prop | null | ItemProps }
 export interface ComponentTemplate {
   id: string | null | undefined,
   parentId?: string | undefined,
+  index?: number | undefined,
   componentName: string,
   displayName: string,
   editable: boolean,
@@ -38,7 +39,8 @@ type State = {
   pageTemplate: PageTemplate | null,
   componentTemplates:{[id: string]: ComponentTemplate } | null,
   components: {[id: string]: Component } | null
-  editMode: 'dummy' | 'content' | 'preview'
+  editMode: 'dummy' | 'content' | 'preview',
+  blockTree: {[parentId: string]: string[]}
 }
 
 const initialState: State = {
@@ -63,7 +65,8 @@ const initialState: State = {
     }
   },
   componentTemplates: {},
-  components: {}
+  components: {},
+  blockTree: {}
 }
 
 const editorLayoutSlice = createSlice({
@@ -80,10 +83,11 @@ const editorLayoutSlice = createSlice({
     },
     registerComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }}),
     updateComponent: (state, action) => ({...state, components: {...state.components, [action.payload.id]: {...action.payload} }}),
-    setEditMode: (state, action) => ({...state, editMode: action.payload})
+    setEditMode: (state, action) => ({...state, editMode: action.payload}),
+    setBlockTree: (state, action) => ({...state, blockTree: action.payload})
     }
 })
 
 export default editorLayoutSlice.reducer;
 
-export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent, setEditMode, deleteComponentTemplate } = editorLayoutSlice.actions;
+export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent, setEditMode, deleteComponentTemplate, setBlockTree } = editorLayoutSlice.actions;

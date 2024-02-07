@@ -4,5 +4,6 @@ import TextPlaceholder from "./editor/primitives/text-placeholder";
 import ArticleGroup1 from "./editor/blocks/article-group-1";
 import Container from "./primitives/container";
 import BlockRegistryProvider from "./block-registry-provider";
+import Slot from "./editor/primitives/slot";
 
-export { ContainerPlaceholder, ImagePlaceholder, ArticleGroup1, Container, BlockRegistryProvider, TextPlaceholder }
+export { ContainerPlaceholder, ImagePlaceholder, ArticleGroup1, Container, BlockRegistryProvider, TextPlaceholder, Slot }

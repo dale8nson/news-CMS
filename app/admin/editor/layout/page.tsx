@@ -37,9 +37,9 @@ const Page = () => {
   return (
     <div className={`flex-col relative mt-[8rem] `} style={{...pageTemplate?.props.style}} onClick={clickHandler} >
       <Container editable={false} className={`${editMode === 'dummy' ? 'border-dashed border-gray-300': 'border-transparent'} border-2 relative flex flex-1`} >
-        <Container editable={true} className={`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-2 border-transparent relative flex-col flex-1 h-full`} />
-        <Container editable={true} className={`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-transparent border-2 flex-col flex-1 relative`} style={{height:'max-content'}} />
-        <Container editable={true} {...{className:`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-transparent h-full border-2 flex-col flex-1 relative`}} />
+        <Container editable={true} className={`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-2 border-transparent relative h-full grid grid-flow-row auto-cols-auto`} />
+        {/* <Container editable={true} className={`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-transparent border-2 flex-col flex-1 relative`} style={{height:'max-content'}} />
+        <Container editable={true} {...{className:`${editMode === 'dummy' ? 'hover:border-solid hover:border-gray-300' : ''} border-transparent h-full border-2 flex-col flex-1 relative`}} /> */}
       </Container>
     </div>
   )

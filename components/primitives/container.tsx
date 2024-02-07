@@ -33,7 +33,7 @@ const Container = forwardRef(
       mode?: 'dummy' | 'content' | 'preview',
       editable?: boolean,
       draggable?: boolean,
-      tabIndex?: number
+      tabIndex?: number,
       onDragStart?: DragEventHandler,
       onDrop?: DragEventHandler,
       onDragOver?: DragEventHandler,
