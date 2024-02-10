@@ -11,16 +11,11 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   console.log(`ContainerPlaceHolder`);
   console.log(`parentNode:`, parentNode);
   const dispatch = useAppDispatch();
-
   const [blockList, setBlockList] = useState<ReactElement[]>([]);
-
   const selectedComponentTemplate = useAppSelector(state => state.editorLayoutSlice.selectedComponentTemplate)
-
   const componentTemplates = useAppSelector(state => state.editorLayoutSlice.componentTemplates);
-
   const blockTree = useAppSelector(state => state.editorLayoutSlice.blockTree);
   const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
-
 
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,6 +40,8 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
   const dropHandler: DragEventHandler = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    console.log(`dropHandler e.dataTransfer:`, e.dataTransfer);
 
     ref?.current?.classList.replace('bg-white', 'bg-gray-400');
 
@@ -104,8 +101,8 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
       console.log(`blockList:`, blockList);
 
       dispatch(updateComponentTemplate(newTemplate));
+      dispatch(setSelectedComponentTemplate({ ...newTemplate, size: { width: null, height: null } }));
     }
-
   }
 
   const node = useRef<ReactNode>();
@@ -136,20 +133,12 @@ const ContainerPlaceholder = ({ parentNode, className }: { parentNode: Element |
         .map((blk, index) => {
           return (
             <>
-              {editMode === 'dummy' && <Slot key={crypto.randomUUID()} {...{ parentNode: parentNode as Element, index}} />}
+              {editMode === 'dummy' && <Slot key={crypto.randomUUID()} {...{ parentNode: parentNode as Element, index }} />}
               {blk}
             </>
           )
         })
     }
-    // setBlockList(blockList.filter(block => {
-    //   const blk = block as ReactElement;
-    //   const template = componentTemplates?.[blk?.props?.id];
-    //   return template?.parentId === parentNode?.getAttribute('id');
-    // })
-    // );
-   
-
 
     console.log(`setBlocks componentTemplates:`, componentTemplates);
 

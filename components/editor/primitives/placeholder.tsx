@@ -41,7 +41,14 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
   const dragStartHandler: DragEventHandler = (e) => {
     e.stopPropagation();
     console.log(`registeredTemplate:`, registeredTemplate);
-    dispatch(setSelectedComponentTemplate(registeredTemplate));
+    const el = e.target as Element;
+    const rect = el.getBoundingClientRect();
+    const sz = {width:rect.width, height:rect.height};
+    console.log(`sz:`, sz);
+    dispatch(setSelectedComponentTemplate({...registeredTemplate, size:sz}));
+
+    // e.dataTransfer.setData('application/json', sz);
+    // console.log(`placeholder e:`, e);
   }
 
   const clickHandler: MouseEventHandler = (e) => {
@@ -65,7 +72,7 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
 
   useEffect(() => {
 
-    dispatch(registerComponentTemplate(registeredTemplate || componentTemplate));
+    dispatch(registerComponentTemplate(componentTemplate));
 
     if (containerRef.current) {
       setRect(containerRef.current.getBoundingClientRect());
@@ -80,13 +87,13 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
     observer.current.observe(containerRef.current);
 
     if (componentTemplate.selectOnMount) {
-      dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
+      dispatch(setSelectedComponentTemplate(componentTemplate));
 
       // setOverride(registeredTemplate) ;
 
     }
 
-  }, [dispatch, registeredTemplate, componentTemplate])
+  }, [dispatch, componentTemplate])
 
   
 

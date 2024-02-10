@@ -54,11 +54,11 @@ const TextPlaceholder = ({ id, editable, parentId, selectOnMount, width, height,
   }, [registeredTemplate, blockId])
 
   const icon = (
-    <div className="p-1 bg-gray-300">
-      <svg width='100%' height='100%' className='bg-gray-300' viewBox={`0 0 ${rect.width} ${rect.height}`} >
+    <div className="p-1 bg-gray-300"  >
+      <svg  width='100%' height='100%' className='bg-gray-300' viewBox={`0 0 ${rect.width} ${rect.height}`} >
         {rect && Array(Math.floor(rect.height / ((Math.max(rect.width, rect.height) / Math.min(rect.width, rect.height))))).fill(null).map((_, index) => {
           return (
-            <line key={crypto.randomUUID()} stroke="#000" strokeWidth={(5 * (rect.width / rect.height))} x1={2} y1={index * (Math.max(rect.width, rect.height) / Math.min(rect.width, rect.height)) * 8} x2={index % 5 === Math.floor(Math.random() * 5) ? rect.width - ((8 / 35) * rect.width) : rect.width - 4} y2={index * (Math.max(rect.width, rect.height) / Math.min(rect.width, rect.height)) * 8} />
+            <line {...{inert:true}} key={crypto.randomUUID()} stroke="#000" strokeWidth={(5 * (rect.width / rect.height))} x1={2} y1={index * (Math.max(rect.width, rect.height) / Math.min(rect.width, rect.height)) * 8} x2={index % 5 === Math.floor(Math.random() * 5) ? rect.width - ((8 / 35) * rect.width) : rect.width - 4} y2={index * (Math.max(rect.width, rect.height) / Math.min(rect.width, rect.height)) * 8} />
           )
         })}
       </svg>

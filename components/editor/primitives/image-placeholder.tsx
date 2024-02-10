@@ -44,16 +44,29 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
   const observer = useRef<ResizeObserver>();
 
   const dragStartHandler: DragEventHandler = (e) => {
+    // e.preventDefault();
     console.log(`dragStartHandler`);
-    e.stopPropagation();
+    // e.stopPropagation();
     e.dataTransfer.dropEffect = dragAction;
-    dispatch(setSelectedComponentTemplate(registeredTemplate || componentTemplate));
+    const el = e.target as Element;
+    const rect = el.getBoundingClientRect();
+    console.log(`rect:`, rect);
+    const sz = {width:rect.width, height:rect.height};
+    console.log(`sz:`, sz);
+    const props = registeredTemplate?.props as ItemProps;
+    const style = props.style as ItemProps;
+    const widthStr = style.width as string;
+    const width = widthStr.match(/\d{1,4}/);
+    const heightStr = style.height as string;
+    const height = heightStr.match(/\d{1,4}/);
+
+    dispatch(setSelectedComponentTemplate({...registeredTemplate, size: {width, height}}));
   }
 
   const clickHandler: MouseEventHandler = (e) => {
     console.log(`clickHandler`);
     e.preventDefault();
-    e.stopPropagation();
+    // e.stopPropagation();
     if (editable) {
       dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
