@@ -3,15 +3,16 @@ import type { MouseEventHandler, ReactNode, ReactElement,  } from "react"
 import { forwardRef, useState, createElement, useRef, useEffect, useMemo } from 'react';
 import type { DragEventHandler } from "react";
 import ContainerPlaceholder from "../editor/primitives/container-placeholder";
-import { useAppStore, useAppSelector } from "@/lib/hooks";
+import { useAppStore, useAppSelector, useAppDispatch } from "@/lib/hooks";
 import { setDraggedId } from "@/lib/rootreducer";
-import { ItemProps } from "@/lib/editor-layout-slice";
+import { ItemProps, initPendingTemplateList } from "@/lib/editor-layout-slice";
 
 
 const Container = forwardRef(
   function Container(
     {
       id,
+      parentId,
       children,
       className = '',
       editable,
@@ -27,7 +28,7 @@ const Container = forwardRef(
       style
     }: {
       id?: string,
-      containerId?: string,
+      parentId?: string,
       children?: ReactNode,
       className?: string,
       mode?: 'dummy' | 'content' | 'preview',
@@ -46,7 +47,10 @@ const Container = forwardRef(
     ref?: any) {
     console.log(`Container`);
     const containerRef = useRef<any>(null);
-    const containerId = useMemo(() => crypto.randomUUID(),[])
+    const containerId = useMemo(() => parentId || crypto.randomUUID(),[parentId]);
+    const dispatch = useAppDispatch();
+    dispatch(initPendingTemplateList(parentId));
+
     const [parentNode, setParentNode] = useState<Element | null>(null);
     const editMode = useAppSelector(state => state.editorLayoutSlice.editMode);
 
@@ -78,15 +82,9 @@ const Container = forwardRef(
     const initContainerRef = (node: Element) => {
       if(!node) return;
       containerRef.current = node as Element;
-      console.log(`containerRef id:`, containerRef.current.getAttribute('id'));
+      console.log(`container containerId:`, containerRef.current.getAttribute('id'));
       setParentNode(containerRef.current);
     }
-
-    // useEffect(() => {
-
-      
-
-    // },[]);
 
     return (
       <div
@@ -106,7 +104,7 @@ const Container = forwardRef(
       >
         <div draggable={editable && editMode === 'dummy'} ref={initContainerRef as any} id={containerId} className="flex-col justify-evenly" />
         {children}
-        {!!parentNode && <div className={`w-full h-full ${editMode !== 'dummy' || !editable ? 'hidden' : ''}`} draggable={false}><ContainerPlaceholder parentNode={parentNode} className={`z-20`} /></div>}
+        {!!parentNode && <div className={`w-full h-full ${editMode !== 'dummy' || !editable ? 'hidden' : ''}`} draggable={false}><ContainerPlaceholder parentNode={parentNode} parentId={containerId} className={`z-20`} /></div>}
       </div>
     )
   });

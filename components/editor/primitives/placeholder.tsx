@@ -12,7 +12,7 @@ interface Size {
   height: number
 }
 
-const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateOverride, icon, iconStyle, blockIdRef }: { template: ComponentTemplate, defaultTemplateOverride?:any, icon: string | ReactNode, iconStyle?: ItemProps, blockIdRef?: any }, ref?: any) {
+const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateOverride, icon, iconStyle, blockIdRef, parentId }: { template: ComponentTemplate, defaultTemplateOverride?:any, icon: string | ReactNode, iconStyle?: ItemProps, blockIdRef?: any, parentId: string }, ref?: any) {
 
   const blockId = useMemo(() => template.id as string, [template]);
   console.log(`blockId:`, blockId);
@@ -34,13 +34,13 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
 
   const containerRef: any = useRef<any>(null);
   
-
   const [rect, setRect] = useState<Size>();
   const observer = useRef<ResizeObserver>();
 
   const dragStartHandler: DragEventHandler = (e) => {
     e.stopPropagation();
     console.log(`registeredTemplate:`, registeredTemplate);
+    console.log(`placeholder containerId:`, registeredTemplate?.parentId);
     const el = e.target as Element;
     const rect = el.getBoundingClientRect();
     const sz = {width:rect.width, height:rect.height};
@@ -95,11 +95,10 @@ const Placeholder = forwardRef(function Placeholder({ template, defaultTemplateO
 
   }, [dispatch, componentTemplate])
 
-  
-
   return (
     <Container
       id={template.id as string}
+      parentId={parentId}
       containerId={containerIdRef.current}
       draggable={editMode === 'dummy'}
       onDragStart={dragStartHandler}

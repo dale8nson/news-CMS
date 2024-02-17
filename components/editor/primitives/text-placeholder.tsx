@@ -28,8 +28,8 @@ const TextPlaceholder = ({ id, editable, parentId, selectOnMount, width, height,
     editable,
     selectOnMount,
     dragAction: dragAction,
-    parentId,
     props: {
+      parentId,
       style: {
         width:  `220px`,
         height: `132px`
@@ -65,7 +65,7 @@ const TextPlaceholder = ({ id, editable, parentId, selectOnMount, width, height,
     </div>
   )
   return ( 
-      <Placeholder template={componentTemplate} defaultTemplateOverride={{style:{width:`${maxWidth}px`, height:`${maxHeight}px`}}} icon={icon} ref={containerRef} />
+      <Placeholder template={componentTemplate} defaultTemplateOverride={{style:{width:`${maxWidth}px`, height:`${maxHeight}px`}}} icon={icon} ref={containerRef} parentId={parentId as string} />
   )
 }
 

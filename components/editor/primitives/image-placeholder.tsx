@@ -11,7 +11,7 @@ interface Size {
   height: number
 }
 
-function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragAction }: { id?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction: 'move' | 'copy' | 'link' | 'none' }) {
+function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, height, dragAction }: { id?: string, parentId?: string, editable: boolean, selectOnMount?: boolean | undefined, width?: string | undefined, height?: string | undefined, dragAction: 'move' | 'copy' | 'link' | 'none' }) {
 
   const blockId = useMemo(() => id || crypto.randomUUID(), [id]);
 
@@ -23,6 +23,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     selectOnMount,
     dragAction: dragAction,
     props: {
+      parentId,
       style: {
         width: '220px',
         height: '132px'
@@ -47,6 +48,7 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
     // e.preventDefault();
     console.log(`dragStartHandler`);
     // e.stopPropagation();
+    console.log(`ImagePlaceholder dragStart containerId:`, registeredTemplate?.parentId)
     e.dataTransfer.dropEffect = dragAction;
     const el = e.target as Element;
     const rect = el.getBoundingClientRect();
@@ -98,13 +100,14 @@ function ImagePlaceholder({ id, editable, selectOnMount, width, height, dragActi
       dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
 
-  }, [dispatch, registeredTemplate, componentTemplate, selectOnMount])
+  }, [dispatch, registeredTemplate, componentTemplate, selectOnMount]);
 
   const style = registeredTemplate?.props?.style as ItemProps;
 
   return (
     <Container
       id={blockId}
+      parentId={parentId}
       containerId={idRef.current}
       draggable={editMode === 'dummy'}
       onDragStart={dragStartHandler}

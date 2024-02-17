@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { staticGenerationAsyncStorage } from "next/dist/client/components/static-generation-async-storage.external";
 
 export type Prop = string | number | null;
 
@@ -16,7 +17,7 @@ export interface ComponentTemplate {
   props?: ItemProps,
   children?: ComponentTemplate[],
   blockIds?: string[],
-  size?: { width: number, height: number }
+  size?: { width: number | null, height: number | null }
 }
 
 export interface Component extends ComponentTemplate { }
@@ -41,7 +42,8 @@ type State = {
   componentTemplates: { [id: string]: ComponentTemplate } | null,
   components: { [id: string]: Component } | null
   editMode: 'dummy' | 'content' | 'preview',
-  blockTree: { [parentId: string]: string[] }
+  blockTree: { [parentId: string]: string[] },
+  pendingTemplates: {[parentId: string]: ComponentTemplate[]}
 }
 
 const initialState: State = {
@@ -67,7 +69,8 @@ const initialState: State = {
   },
   componentTemplates: {},
   components: {},
-  blockTree: {}
+  blockTree: {},
+  pendingTemplates: {}
 }
 
 const editorLayoutSlice = createSlice({
@@ -85,10 +88,13 @@ const editorLayoutSlice = createSlice({
     registerComponent: (state, action) => ({ ...state, components: { ...state.components, [action.payload.id]: { ...action.payload } } }),
     updateComponent: (state, action) => ({ ...state, components: { ...state.components, [action.payload.id]: { ...action.payload } } }),
     setEditMode: (state, action) => ({ ...state, editMode: action.payload }),
-    setBlockTree: (state, action) => ({ ...state, blockTree: action.payload })
+    setBlockTree: (state, action) => ({ ...state, blockTree: action.payload }),
+    initPendingTemplateList: (state, action) => ({...state, pendingTemplates: {...state.pendingTemplates, [action.payload]:[]}}),
+    queueTemplate: (state, action) => ({...state, pendingTemplates: {...state.pendingTemplates, [action.payload.parentId]: [...state.pendingTemplates[action.payload.parentId] as ComponentTemplate[], action.payload] }}),
+    dequeueTemplates:(state, action) => ({...state, pendingTemplates: {...state.pendingTemplates, [action.payload]: [] }})
   }
 })
 
 export default editorLayoutSlice.reducer;
 
-export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent, setEditMode, deleteComponentTemplate, setBlockTree } = editorLayoutSlice.actions;
+export const { setSelectedComponentTemplate, setPageTemplate, registerComponentTemplate, updateComponentTemplate, registerComponent, updateComponent, setEditMode, deleteComponentTemplate, setBlockTree, initPendingTemplateList, queueTemplate, dequeueTemplates } = editorLayoutSlice.actions;
