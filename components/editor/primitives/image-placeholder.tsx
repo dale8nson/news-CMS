@@ -17,13 +17,13 @@ function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, heigh
 
   const componentTemplate = useMemo(() => ({
     id: blockId,
+    parentId,
     componentName: 'ImagePlaceholder',
     displayName: 'Image Placeholder',
     editable,
     selectOnMount,
     dragAction: dragAction,
     props: {
-      parentId,
       style: {
         width: '220px',
         height: '132px'
@@ -66,9 +66,7 @@ function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, heigh
   }
 
   const clickHandler: MouseEventHandler = (e) => {
-    console.log(`clickHandler`);
     e.preventDefault();
-    // e.stopPropagation();
     if (editable) {
       dispatch(setSelectedComponentTemplate(registeredTemplate));
     }
@@ -76,7 +74,6 @@ function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, heigh
 
   const initRef = (node: Element) => {
     if (!node) return;
-    console.log('initRef');
     ref.current = node;
   }
 
@@ -90,7 +87,6 @@ function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, heigh
 
     observer.current = new ResizeObserver(entries => {
       const size = entries[0].borderBoxSize[0];
-      console.log(`size:`, size);
       setRect({ width: size.inlineSize, height: size.blockSize });
     })
 
@@ -108,7 +104,6 @@ function ImagePlaceholder({ id, parentId, editable,  selectOnMount, width, heigh
     <Container
       id={blockId}
       parentId={parentId}
-      containerId={idRef.current}
       draggable={editMode === 'dummy'}
       onDragStart={dragStartHandler}
       onClick={clickHandler}

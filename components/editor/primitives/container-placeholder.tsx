@@ -49,62 +49,79 @@ const ContainerPlaceholder = ({ parentNode, parentId, className }: { parentNode:
 
     console.log(`selectedComponentTemplate:`, selectedComponentTemplate);
 
-    const { componentName, displayName, dragAction, editable, selectOnMount, props, id, parentId: templateParentId } = selectedComponentTemplate as ComponentTemplate;
+    const { componentName, dragAction, id, parentId: templateParentId, index } = selectedComponentTemplate as ComponentTemplate;
 
+    console.log(`templateParentId selectedTemplateComponent:`, selectedComponentTemplate);
     console.log(`templateParentId: ${templateParentId} parentNode?.id: ${parentNode?.id}`);
 
-    if (!templateParentId || templateParentId !== parentId) {
-      let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId, index: blockList.length, editable: true, selectOnMount: true, dragAction: 'move' }
+    // if (!templateParentId || templateParentId !== parentId) {
+    let newTemplate = { ...selectedComponentTemplate, id: dragAction === 'move' ? id : null, parentId, index: blockList.length, editable: true, selectOnMount: true, dragAction: 'move' }
 
-      const block = Registry[componentName].el(newTemplate, null);
-      const blk = block as ReactElement;
-      newTemplate = { ...newTemplate, id: blk.props.id }
+    console.log(`newTemplate:`, newTemplate);
 
-      console.log(`block:`, block);
+    const block = Registry[componentName].el(newTemplate, null);
+    const blk = block as ReactElement;
+    newTemplate = { ...newTemplate, id: blk.props.id }
 
-      if (!!parentNode) {
-        const pid = parentId;
-        const props = blk?.props;
-        let childIds: string[] = blockTree[pid] || [];
-        console.log(`childIds:`, childIds);
-        childIds = [...childIds, props.id];
+    console.log(`block:`, block);
 
-        if (!!templateParentId && templateParentId !== parentNode?.id) {
+    // if (!!parentNode) {
+    
 
-          console.log(`templateParentId: ${templateParentId}`);
+    // if (!!templateParentId && templateParentId !== parentNode?.id) {
 
-          const oldParentChildIds = blockTree[templateParentId as string];
-          console.log(`oldParentChildIds:`, oldParentChildIds);
-          if (!!oldParentChildIds) {
-            const index = oldParentChildIds.indexOf(id as string);
-            const oldParentNewChildIds = oldParentChildIds.toSpliced(index, 1);
-            dispatch(setBlockTree({ ...blockTree, [parentId]: childIds, [templateParentId]: oldParentNewChildIds }));
-          }
+    console.log(`templateParentId selectedTemplateComponent:`, selectedComponentTemplate);
 
-        } else {
 
-          dispatch(setBlockTree({ ...blockTree, [parentId]: childIds }));
-        }
+    console.log(`templateParentId: ${templateParentId}`);
 
-        const placeHolders: ReactElement[] = [];
-        for (const id of childIds) {
-          const blk = blockList.find(blk => {
-            return blk?.props.id === id;
-          })
-          if (blk) {
-            placeHolders.push(blk);
-          }
-        }
-
-        setBlockList([...placeHolders, block as ReactElement]);
-
+    const oldParentIndex = templateParentId as string || parentId;
+    const oldParentChildIds = blockTree[oldParentIndex];
+    console.log(`oldParentChildIds:`, oldParentChildIds);
+    if (!!oldParentChildIds) {
+      const oldChildIndex = oldParentChildIds.indexOf(id as string);
+      console.log(`oldChildIndex:`, oldChildIndex);
+      if(oldChildIndex) {
+      const oldParentNewChildIds = oldParentChildIds.toSpliced(oldChildIndex, 1);
+      dispatch(setBlockTree({ ...blockTree, [oldParentIndex]: oldParentNewChildIds }));
       }
-
-      console.log(`blockList:`, blockList);
-
-      dispatch(updateComponentTemplate(newTemplate));
-      dispatch(setSelectedComponentTemplate({ ...newTemplate, size: { width: null, height: null } }));
     }
+    const props = blk?.props;
+    let childIds: string[] = blockTree[parentId] || [];
+    console.log(`childIds:`, childIds);
+    childIds = [...childIds, props.id];
+    dispatch(setBlockTree({ ...blockTree, [parentId]:childIds }));
+
+    // } 
+    // else {
+    //   const oldParentChildIds = blockTree[templateParentId as string];
+    //   console.log(`oldParentChildIds:`, oldParentChildIds);
+    //   if (!!oldParentChildIds) {
+    //     const index = oldParentChildIds.indexOf(id as string);
+    //     const oldParentNewChildIds = oldParentChildIds.toSpliced(index, 1);
+    //   dispatch(setBlockTree({ ...blockTree, [parentId]: childIds, [templateParentId as string]: oldParentNewChildIds }));
+    //   }
+    // }
+
+    const placeHolders: ReactElement[] = [];
+    for (const id of childIds) {
+      const blk = blockList.find(blk => {
+        return blk?.props.id === id;
+      })
+      if (blk) {
+        placeHolders.push(blk);
+      }
+    }
+
+    setBlockList([...placeHolders, block as ReactElement]);
+
+    // }
+
+    console.log(`blockList:`, blockList);
+
+    dispatch(updateComponentTemplate(newTemplate));
+    dispatch(setSelectedComponentTemplate({ ...newTemplate, size: { width: null, height: null } }));
+    // }
   }
 
   const node = useRef<ReactNode>();
@@ -115,7 +132,7 @@ const ContainerPlaceholder = ({ parentNode, parentId, className }: { parentNode:
 
     let childIds: string[] = blockTree[parentId] || [];
 
-    
+
 
     console.log(`childIds:`, childIds);
     if (childIds.length > 0) {
@@ -156,27 +173,27 @@ const ContainerPlaceholder = ({ parentNode, parentId, className }: { parentNode:
 
   console.log(`pendingTemplateList:`, pendingTemplateList);
 
-    if (pendingTemplateList?.length > 0) {
-      console.log(`pendingTemplateList?.length > 0:${pendingTemplateList?.length > 0}`)
-      console.log(`pendingTemplateList:`, pendingTemplateList);
-      console.log(`parentId: ${parentId}`);
-      let blockIds = [...blockTree[parentId]] || [];
+  if (pendingTemplateList?.length > 0) {
+    console.log(`pendingTemplateList?.length > 0:${pendingTemplateList?.length > 0}`)
+    console.log(`pendingTemplateList:`, pendingTemplateList);
+    console.log(`parentId: ${parentId}`);
+    let blockIds = [...blockTree[parentId]] || [];
+    console.log(`blockIds:`, blockIds);
+    let list = [...blockList];
+    for (const template of pendingTemplateList) {
+      const block = Registry[template.componentName].el(template, null);
+      console.log(`template of pendingTemplateList:`, template);
+      console.log(`block:`, block);
+      const el = block as ReactElement;
+      console.group(`el:`, el);
+      blockIds = blockIds.toSpliced(template.index as number, 0, el.props.id as string);
       console.log(`blockIds:`, blockIds);
-      let list = [...blockList];
-      for (const template of pendingTemplateList) {
-        const block = Registry[template.componentName].el(template, null);
-        console.log(`template of pendingTemplateList:`, template);
-        console.log(`block:`, block);
-        const el = block as ReactElement;
-        console.group(`el:`, el);
-        blockIds = blockIds.toSpliced(template.index as number, 0, el.props.id as string);
-        console.log(`blockIds:`, blockIds);
-        list = list.toSpliced(template.index as number, 0, el);
-      }
-      dispatch(setBlockTree({ ...blockTree, [parentId]: blockIds }));
-      setBlockList(list);
-      dispatch(dequeueTemplates(parentId));
+      list = list.toSpliced(template.index as number, 0, el);
     }
+    dispatch(setBlockTree({ ...blockTree, [parentId]: blockIds }));
+    setBlockList(list);
+    dispatch(dequeueTemplates(parentId));
+  }
 
   return (
     <>

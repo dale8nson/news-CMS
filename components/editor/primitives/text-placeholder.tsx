@@ -23,13 +23,13 @@ const TextPlaceholder = ({ id, editable, parentId, selectOnMount, width, height,
   console.log(`maxWidth: ${maxWidth}, maxHeight: ${maxHeight}`);
   const componentTemplate = useMemo(() => ({
     id: blockId,
+    parentId,
     componentName: 'TextPlaceholder',
     displayName: 'Text Placeholder',
     editable,
     selectOnMount,
     dragAction: dragAction,
     props: {
-      parentId,
       style: {
         width:  `220px`,
         height: `132px`
